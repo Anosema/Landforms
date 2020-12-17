@@ -68,7 +68,7 @@ def createGrid(width, length, size):
 	for x in range(0, width):
 		for z in range(0, length):
 			y = cellList[z][x].depth
-			keyboard.type(f"{x+1}, {y+1}, {z}")
+			keyboard.type(f"t/setblock ~{x+1} ~{y+1} ~{z} minecraft:green_wool")
 			keyboard.press(Key.enter)
 			keyboard.release(Key.enter)
 
