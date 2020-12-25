@@ -159,8 +159,9 @@ class MainWindow(QMainWindow):
 		self.layout.addWidget(self.canvas) 
 		self.wid.setLayout(self.layout)
 	# Grid
-		self.grid = self.initGrid()
+		self.initGrid()
 
+		
 	def ChangePrecision(self):
 		self.LabelTickPrecision.setText(str(self.SliderPrecision.value()))
 	def ChangeSize(self):
@@ -175,7 +176,6 @@ class MainWindow(QMainWindow):
 		self.LabelTickOffsetY.setText(str(self.SliderOffsetY.value()))
 	def ChangeQ(self):
 		self.LabelTickQ.setText(str(self.SliderQ.value()))
-
 	def ChangeGrid(self):
 		self.grid = self.initGrid()
 
@@ -187,8 +187,9 @@ class MainWindow(QMainWindow):
 		x, y = numpy.meshgrid(X, Y)
 		X, Y = numpy.rint(x), numpy.rint(y)
 		Z = numpy.array([[0 for x in range(len(X))] for y in range(len(Y))])
-		self.showGrid((X, Y, Z))
-		return (X, Y, Z)
+		self.grid = (X, Y, Z)
+		self.showGrid(self.grid)
+		
 
 	def visualize(self):
 		height  = self.SliderHeight .value()
