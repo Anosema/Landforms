@@ -1,4 +1,6 @@
-import random, sys, time, numpy
+import sys, time, numpy
+from os.path import expanduser
+from random import choices
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -12,13 +14,9 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 from mpl_toolkits.mplot3d import axes3d
 
-from pynput.keyboard import Key, Controller
-# import pydirectinput
+from litemapy import Schematic, Region, BlockState
 
-keyboard = Controller()
 
-# class Relief:
-	# def __init__(self,)
 class MainWindow(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -198,7 +196,6 @@ class MainWindow(QMainWindow):
 		self.grid = (X, Y, Z)
 		self.showGrid(self.grid)
 		
-
 	def visualize(self):
 		height  = self.SliderHeight .value()
 		offsetX = self.SliderOffsetX.value()
@@ -231,31 +228,54 @@ class MainWindow(QMainWindow):
 		ax.patch.set_facecolor('#F0F0F0')
 		self.canvas.draw()
 
-	def buildRelief():
+	def buildRelief(self):
 		gridList = []
-		t0 = time.time()
+		maxi, mini = 0, 0
 		for i in range(len(self.grid[0])):
+			self.grid[0][i] += (len(self.grid[0][i]))/2
+			self.grid[1][i] += (len(self.grid[1][i]))/2
 			for blockIndex in range(len(self.grid[0][i])):
 				x, z, y = self.grid[0][i][blockIndex], self.grid[1][i][blockIndex], self.grid[2][i][blockIndex]
-				if (x, z, y) not in gridList: gridList.append((x, z, y))
+				if int(y) > maxi: maxi = int(y)
+				if int(y) < mini: mini = int(y)
+				if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
+		# for i in gridList:
+			# i[2] += maxi
+		schem = Schematic(len(self.grid[0]), (maxi+abs(mini)+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
+		reg = schem.regions["Main"]
 
-		time.sleep(5)
+		dirt       = BlockState("minecraft:dirt")
+		podzol     = BlockState("minecraft:podzol")
+		coarseDirt = BlockState("minecraft:coarse_dirt")
+		grass      = BlockState("minecraft:grass_block")
+		Soils  = [dirt, podzol, coarseDirt, grass]
 
+		stone       = BlockState("minecraft:stone")
+		cobblestone = BlockState("minecraft:cobblestone")
+		andesite    = BlockState("minecraft:andesite")
+		gravel      = BlockState("minecraft:gravel")
+		Stones = [stone, cobblestone, andesite, gravel, grass]
+
+		t0 = time.time()
 		for i in gridList:
-			x, z, y = i[0], i[1], i[2]
-			print(x, z, y)
-			pydirectinumpyut.keyDown('t')
-			pydirectinumpyut.keyUp('t')
-			keyboard.type(f"/fill ~{x} 10 ~{z} ~{x} ~{y} ~{z} minecraft:stone\n")
-			pydirectinumpyut.keyDown('enter')
-			pydirectinumpyut.keyUp('enter')
-			pydirectinumpyut.keyDown('t')
-			pydirectinumpyut.keyUp('t')
-			keyboard.type(f"/setblock ~{x} ~{y} ~{z} minecraft:grass_block\n")
-			pydirectinumpyut.keyDown('enter')
-			pydirectinumpyut.keyUp('enter')
+			x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=(10, 10, 10, 70), k=1)[0]
+			try: reg.setblock(x, y, z, block)
+			except Exception: print(x, y, z, block)
+			for j in range(mini, y):
+				block = choices(Stones, weights=(80, 5, 5, 5, 5), k=1)[0]
+				try: reg.setblock(x, j, z, block)
+				except Exception: print(x, y, z, block)
+		schem.save('C:\\Users\\lordc\\AppData\\Roaming\\.minecraft\\schematics\\Generator.litematic')
 		t1 = time.time()
 		process_time = t1-t0
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Information)
+		msg.setText("Your Litematic is ready, finished in")
+		msg.setInformativeText(str(int(process_time*10)/10) + 's')
+		msg.setWindowTitle("Finished")
+		msg.show()
+		msg.exec_()
+		self.initGrid()
 
 
 
