@@ -265,7 +265,7 @@ class MainWindow(QMainWindow):
 				block = choices(Stones, weights=(80, 5, 5, 5, 5), k=1)[0]
 				try: reg.setblock(x, j, z, block)
 				except Exception: print(x, y, z, block)
-		schem.save('C:\\Users\\lordc\\AppData\\Roaming\\.minecraft\\schematics\\Generator.litematic')
+		schem.save(expanduser('~') + 'AppData\\Roaming\\.minecraft\\schematics\\Generator.litematic')
 		t1 = time.time()
 		process_time = t1-t0
 		msg = QMessageBox()
