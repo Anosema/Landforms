@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
 
 		self.SliderQ = QSlider(self.frameReliefs)
 		self.SliderQ.setOrientation(Qt.Horizontal)
-		self.SliderQ.setRange(-50, 50)
+		self.SliderQ.setRange(-500, 500)
 		self.SliderQ.setValue(5)
 		self.SliderQ.setGeometry(35, 250, 120, 30)
 		self.SliderQ.valueChanged.connect(self.ChangeQ)
@@ -144,6 +144,14 @@ class MainWindow(QMainWindow):
 		self.ButtonVisualizeQ = QPushButton('P', self.frameReliefs)
 		self.ButtonVisualizeQ.clicked.connect(self.visualize)
 		self.ButtonVisualizeQ.setGeometry(160, 240, 25, 30)
+	# Add & Build
+		self.ButtonAddRelief = QPushButton('Add Relief', self.frameReliefs)
+		self.ButtonAddRelief.clicked.connect(self.addRelief)
+		self.ButtonAddRelief.setGeometry(5, 350, 190, 30)
+
+		self.ButtonBuildRelief = QPushButton('Build in Minecraft', self.frameReliefs)
+		self.ButtonBuildRelief.clicked.connect(self.buildRelief)
+		self.ButtonBuildRelief.setGeometry(5, 385, 190, 30)
 	# Graph
 		self.frameGraph = QFrame(self)
 		self.frameGraph.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
@@ -206,9 +214,11 @@ class MainWindow(QMainWindow):
 		offsetX = self.SliderOffsetX.value()
 		offsetY = self.SliderOffsetY.value()
 		Q       = self.SliderQ      .value()
+		self.z = 0
 		if Q != 0:
-			self.grid[2] += numpy.array(height * numpy.exp(-((self.grid[0] - offsetX)**2 + (self.grid[1] - offsetY)**2) / Q))
-			self.showGrid((self.grid[0], self.grid[1], self.grid[2]))
+			self.z = self.grid[2] + numpy.array(height * numpy.exp(-((self.grid[0] - offsetX)**2 + (self.grid[1] - offsetY)**2) / Q))
+			self.grid = (self.grid[0], self.grid[1], self.z)
+			self.showGrid(self.grid)
 
 	def showGrid(self, cells):
 		X, Y, Z = cells[0], cells[1], cells[2]
@@ -221,34 +231,34 @@ class MainWindow(QMainWindow):
 		ax.patch.set_facecolor('#F0F0F0')
 		self.canvas.draw()
 
+	def buildRelief():
+		gridList = []
+		t0 = time.time()
+		for i in range(len(self.grid[0])):
+			for blockIndex in range(len(self.grid[0][i])):
+				x, z, y = self.grid[0][i][blockIndex], self.grid[1][i][blockIndex], self.grid[2][i][blockIndex]
+				if (x, z, y) not in gridList: gridList.append((x, z, y))
+
+		time.sleep(5)
+
+		for i in gridList:
+			x, z, y = i[0], i[1], i[2]
+			print(x, z, y)
+			pydirectinumpyut.keyDown('t')
+			pydirectinumpyut.keyUp('t')
+			keyboard.type(f"/fill ~{x} 10 ~{z} ~{x} ~{y} ~{z} minecraft:stone\n")
+			pydirectinumpyut.keyDown('enter')
+			pydirectinumpyut.keyUp('enter')
+			pydirectinumpyut.keyDown('t')
+			pydirectinumpyut.keyUp('t')
+			keyboard.type(f"/setblock ~{x} ~{y} ~{z} minecraft:grass_block\n")
+			pydirectinumpyut.keyDown('enter')
+			pydirectinumpyut.keyUp('enter')
+		t1 = time.time()
+		process_time = t1-t0
 
 
 
-def setStructure(grid):
-	gridList = []
-	t0 = time.time()
-	for i in range(len(grid[0])):
-		for blockIndex in range(len(grid[0][i])):
-			x, z, y = grid[0][i][blockIndex], grid[1][i][blockIndex], grid[2][i][blockIndex]
-			if (x, z, y) not in gridList: gridList.append((x, z, y))
-
-	time.sleep(5)
-
-	for i in gridList:
-		x, z, y = i[0], i[1], i[2]
-		print(x, z, y)
-		pydirectinumpyut.keyDown('t')
-		pydirectinumpyut.keyUp('t')
-		keyboard.type(f"/fill ~{x} 10 ~{z} ~{x} ~{y} ~{z} minecraft:stone\n")
-		pydirectinumpyut.keyDown('enter')
-		pydirectinumpyut.keyUp('enter')
-		pydirectinumpyut.keyDown('t')
-		pydirectinumpyut.keyUp('t')
-		keyboard.type(f"/setblock ~{x} ~{y} ~{z} minecraft:grass_block\n")
-		pydirectinumpyut.keyDown('enter')
-		pydirectinumpyut.keyUp('enter')
-	t1 = time.time()
-	process_time = t1-t0
 
 app = QApplication(sys.argv)
 
