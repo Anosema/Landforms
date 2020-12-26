@@ -5,7 +5,7 @@
 		{"id":"minecraft:podzol", "weight": 5}
 	],
 	"underground": [
-		{"id":"minecraft:stone", "weight": 80},
+		{"id":"minecraft:stone", "weight": 85},
 		{"id":"minecraft:cobblestone", "weight": 5},
 		{"id":"minecraft:andesite", "weight": 5},
 		{"id":"minecraft:gravel", "weight": 5}

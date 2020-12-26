@@ -40,10 +40,6 @@ class MainWindow(QMainWindow):
 		self.buttonExportLitematic.triggered.connect(self.ExportLMT)
 		self.subMenuExport.addAction(self.buttonExportTxt), self.subMenuExport.addAction(self.buttonExportLitematic)
 
-		self.subMenuConfig = self.menu.addMenu('Config')
-
-
-
 	# Options
 		self.frameOptions = QFrame(self)
 		self.frameOptions.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
@@ -249,10 +245,9 @@ class MainWindow(QMainWindow):
 			self.grid = (Xlist, Ylist, Zlist)
 			self.showGrid(self.grid)
 	def ExportLMT(self):
-		filename = QFileDialog.getExistingDirectory(self, 'Choose Folder')
+		filename = QFileDialog.getSaveFileName(self,"Save Schematic","","Litematic Files (*.litematic)")[0]
 		if filename:
-			if os.name == 'nt': filename = filename.replace('/', '\\') + f'\\Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.litematic'
-			else: filename += f'/Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.litematic'
+			filename += '.litematic'
 			gridList = []
 			maxi = 0
 			for i in range(len(self.grid[0])):
@@ -301,10 +296,10 @@ class MainWindow(QMainWindow):
 			msg.exec_()
 			self.initGrid()
 	def ExportTXT(self):
-		filename = QFileDialog.getExistingDirectory(self, 'Choose Folder')
+		filename = QFileDialog.getSaveFileName(self,"Save Plot","","Text Files (*.txt)")[0]
 		if filename:
+			filename += '.txt'
 			Xttw, Yttw, Zttw = [], [], []
-			filename += f'/Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.txt'
 			for i in range(len(self.grid[0])):
 				Xttw.append(str(list(self.grid[0][i])))
 				Yttw.append(str(list(self.grid[1][i])))
@@ -313,6 +308,12 @@ class MainWindow(QMainWindow):
 				file.write(('|'.join(Xttw)).replace('[', '').replace(']', '')+'\n')
 				file.write(('|'.join(Yttw)).replace('[', '').replace(']', '')+'\n')
 				file.write(('|'.join(Zttw)).replace('[', '').replace(']', ''))
+			msg = QMessageBox()
+			msg.setIcon(QMessageBox.Information)
+			msg.setText("Your Save is ready")
+			msg.setWindowTitle("Finished")
+			msg.show()
+			msg.exec_()
 
 
 
