@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		self.setWindowTitle('Relief Generator')
 		self.setFixedWidth (800)
-		self.setFixedHeight(625)
+		self.setFixedHeight(620)
 
 	# Menu
 		self.menu = self.menuBar()
@@ -46,132 +46,107 @@ class MainWindow(QMainWindow):
 	# Options
 		self.frameOptions = QFrame(self)
 		self.frameOptions.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameOptions.setGeometry(0, 25, 200, 225)
-
+		self.frameOptions.setGeometry(0, 20, 200, 225)
 		self.labelTitleOptions = QLabel('Change Grid Config', self.frameOptions)
 		self.labelTitleOptions.setGeometry(5, 5, 190, 30)
 		self.labelTitleOptions.setAlignment(Qt.AlignCenter)
 		self.labelTitleOptions.setFont(QFont('Arial', 14))
 	# Precision
 		self.labelTitlePrecision = QLabel('Precision', self.frameOptions)
-		self.labelTitlePrecision.setGeometry(5, 40, 150, 30)
-
+		self.labelTitlePrecision.setGeometry(15, 40, 150, 30)
 		self.sliderPrecision = QSlider(self.frameOptions)
 		self.sliderPrecision.setOrientation(Qt.Horizontal)
 		self.sliderPrecision.setRange(1, 250)
 		self.sliderPrecision.setValue(100)
-		self.sliderPrecision.setGeometry(35, 70, 120, 30)
+		self.sliderPrecision.setGeometry(45, 70, 120, 30)
 		self.sliderPrecision.valueChanged.connect(self.ChangePrecision)
-
 		self.labelTickPrecision = QLabel(str(self.sliderPrecision.value()), self.frameOptions)
-		self.labelTickPrecision.setGeometry(5, 60, 25, 30)
-
-		self.buttonReloadPrecision = QPushButton('R', self.frameOptions)
-		self.buttonReloadPrecision.clicked.connect(self.initGrid)
-		self.buttonReloadPrecision.setGeometry(160, 60, 25, 30)
+		self.labelTickPrecision.setGeometry(15, 60, 25, 30)
 	# Size
 		self.labelTitleSize = QLabel('Size', self.frameOptions)
-		self.labelTitleSize.setGeometry(5, 100, 150, 30)
-
+		self.labelTitleSize.setGeometry(15, 100, 150, 30)
 		self.sliderSize = QSlider(self.frameOptions)
 		self.sliderSize.setOrientation(Qt.Horizontal)
 		self.sliderSize.setRange(1, 250)
 		self.sliderSize.setValue(5)
-		self.sliderSize.setGeometry(35, 130, 120, 30)
+		self.sliderSize.setGeometry(45, 130, 120, 30)
 		self.sliderSize.valueChanged.connect(self.ChangeSize)
-
 		self.labelTickSize = QLabel(str(self.sliderSize.value()), self.frameOptions)
-		self.labelTickSize.setGeometry(5, 120, 25, 30)
+		self.labelTickSize.setGeometry(15, 120, 25, 30)
+	# Reload
+		self.buttonReloadRelief = QPushButton('Reload Grid', self.frameOptions)
+		self.buttonReloadRelief.clicked.connect(self.initGrid)
+		self.buttonReloadRelief.setGeometry(5, 190, 190, 30)
 
-		self.buttonReloadSize = QPushButton('R', self.frameOptions)
-		self.buttonReloadSize.clicked.connect(self.initGrid)
-		self.buttonReloadSize.setGeometry(160, 120, 25, 30)
+
 	# Reliefs
 		self.frameReliefs = QFrame(self)
 		self.frameReliefs.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameReliefs.setGeometry(0, 250, 200, 375)
+		self.frameReliefs.setGeometry(0, 245, 200, 375)
 		self.labelTitleReliefs = QLabel('Add New Relief', self.frameReliefs)
 		self.labelTitleReliefs.setGeometry(5, 5, 190, 30)
 		self.labelTitleReliefs.setAlignment(Qt.AlignCenter)
 		self.labelTitleReliefs.setFont(QFont('Arial', 14))
 	# Height
 		self.labelTitleHeight = QLabel('Height', self.frameReliefs)
-		self.labelTitleHeight.setGeometry(5, 40, 150, 30)
-
+		self.labelTitleHeight.setGeometry(15, 40, 150, 30)
 		self.sliderHeight = QSlider(self.frameReliefs)
 		self.sliderHeight.setOrientation(Qt.Horizontal)
 		self.sliderHeight.setRange(-250, 250)
-		self.sliderHeight.setGeometry(35, 70, 120, 30)
+		self.sliderHeight.setGeometry(45, 70, 120, 30)
 		self.sliderHeight.valueChanged.connect(self.ChangeHeight)
-
 		self.labelTickHeight = QLabel(str(self.sliderHeight.value()), self.frameReliefs)
-		self.labelTickHeight.setGeometry(5, 60, 25, 30)
-
-		self.buttonVisualizeHeight = QPushButton('P', self.frameReliefs)
-		self.buttonVisualizeHeight.clicked.connect(self.visualize)
-		self.buttonVisualizeHeight.setGeometry(160, 60, 25, 30)
+		self.labelTickHeight.setGeometry(15, 60, 25, 30)
 	# OffsetX
 		self.labelTitleOffsetX = QLabel('OffsetX', self.frameReliefs)
-		self.labelTitleOffsetX.setGeometry(5, 100, 150, 30)
+		self.labelTitleOffsetX.setGeometry(15, 100, 150, 30)
 
 		self.sliderOffsetX = QSlider(self.frameReliefs)
 		self.sliderOffsetX.setOrientation(Qt.Horizontal)
 		self.sliderOffsetX.setRange(-self.sliderSize.value(), self.sliderSize.value())
-		self.sliderOffsetX.setGeometry(35, 130, 120, 30)
+		self.sliderOffsetX.setGeometry(45, 130, 120, 30)
 		self.sliderOffsetX.valueChanged.connect(self.ChangeOffsetX)
 
 		self.labelTickOffsetX = QLabel(str(self.sliderOffsetX.value()), self.frameReliefs)
-		self.labelTickOffsetX.setGeometry(5, 120, 25, 30)
-
-		self.buttonVisualizeOffsetX = QPushButton('P', self.frameReliefs)
-		self.buttonVisualizeOffsetX.clicked.connect(self.visualize)
-		self.buttonVisualizeOffsetX.setGeometry(160, 120, 25, 30)
+		self.labelTickOffsetX.setGeometry(15, 120, 25, 30)
 	# OffsetY
 		self.labelTitleOffsetY = QLabel('OffsetY', self.frameReliefs)
-		self.labelTitleOffsetY.setGeometry(5, 160, 150, 30)
+		self.labelTitleOffsetY.setGeometry(15, 160, 150, 30)
 
 		self.sliderOffsetY = QSlider(self.frameReliefs)
 		self.sliderOffsetY.setOrientation(Qt.Horizontal)
 		self.sliderOffsetY.setRange(-self.sliderSize.value(), self.sliderSize.value())
-		self.sliderOffsetY.setGeometry(35, 190, 120, 30)
+		self.sliderOffsetY.setGeometry(45, 190, 120, 30)
 		self.sliderOffsetY.valueChanged.connect(self.ChangeOffsetY)
 
 		self.labelTickOffsetY = QLabel(str(self.sliderOffsetY.value()), self.frameReliefs)
-		self.labelTickOffsetY.setGeometry(5, 180, 25, 30)
-
-		self.buttonVisualizeOffsetY = QPushButton('P', self.frameReliefs)
-		self.buttonVisualizeOffsetY.clicked.connect(self.visualize)
-		self.buttonVisualizeOffsetY.setGeometry(160, 180, 25, 30)
+		self.labelTickOffsetY.setGeometry(15, 180, 25, 30)
 	# Q
 		self.labelTitleQ = QLabel('Q', self.frameReliefs)
-		self.labelTitleQ.setGeometry(5, 220, 150, 30)
+		self.labelTitleQ.setGeometry(15, 220, 150, 30)
 
 		self.sliderQ = QSlider(self.frameReliefs)
 		self.sliderQ.setOrientation(Qt.Horizontal)
 		self.sliderQ.setRange(-500, 500)
 		self.sliderQ.setValue(5)
-		self.sliderQ.setGeometry(35, 250, 120, 30)
+		self.sliderQ.setGeometry(45, 250, 120, 30)
 		self.sliderQ.valueChanged.connect(self.ChangeQ)
 
 		self.labelTickQ = QLabel(str(self.sliderQ.value()), self.frameReliefs)
-		self.labelTickQ.setGeometry(5, 240, 25, 30)
+		self.labelTickQ.setGeometry(15, 240, 25, 30)
+	# Visualize & Add
+		self.buttonVisRelief = QPushButton('Visualize', self.frameReliefs)
+		self.buttonVisRelief.clicked.connect(self.visualizeRelief)
+		self.buttonVisRelief.setGeometry(5, 310, 190, 30)
 
-		self.buttonVisualizeQ = QPushButton('P', self.frameReliefs)
-		self.buttonVisualizeQ.clicked.connect(self.visualize)
-		self.buttonVisualizeQ.setGeometry(160, 240, 25, 30)
-	# Add & Build
 		self.buttonAddRelief = QPushButton('Add Relief', self.frameReliefs)
 		self.buttonAddRelief.clicked.connect(self.addRelief)
-		self.buttonAddRelief.setGeometry(5, 350, 190, 30)
+		self.buttonAddRelief.setGeometry(5, 340, 190, 30)
 
-		self.buttonBuildRelief = QPushButton('Build in Minecraft', self.frameReliefs)
-		self.buttonBuildRelief.clicked.connect(self.ExportLMT)
-		self.buttonBuildRelief.setGeometry(5, 385, 190, 30)
 	# Graph
 		self.frameGraph = QFrame(self)
 		self.frameGraph.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameGraph.setGeometry(200, 25, 600, 600)
-
+		self.frameGraph.setGeometry(200, 20, 600, 600)
 		self.figure = plt.figure()
 		self.figure.patch.set_facecolor('#F0F0F0')
 		self.canvas  = FigureCanvas(self.figure)
@@ -183,58 +158,7 @@ class MainWindow(QMainWindow):
 		self.wid.setLayout(self.layout)
 	# Grid
 		self.initGrid()
-	def ExportTXT(self):
-		filename = QFileDialog.getExistingDirectory(self, 'Choose Folder')
-		if filename:
-			Xttw, Yttw, Zttw = [], [], []
-			filename += f'/Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.txt'
-			for i in range(len(self.grid[0])):
-				Xttw.append(str(list(self.grid[0][i])))
-				Yttw.append(str(list(self.grid[1][i])))
-				Zttw.append(str(list(self.grid[2][i])))
-			with open(filename, 'w') as file:
-				file.write(('|'.join(Xttw)).replace('[', '').replace(']', '')+'\n')
-				file.write(('|'.join(Yttw)).replace('[', '').replace(']', '')+'\n')
-				file.write(('|'.join(Zttw)).replace('[', '').replace(']', ''))
 
-
-
-	def OpenFile(self):
-		filename = QFileDialog.getOpenFileName(self,"Load Archives","","Txt Files (*.txt)")[0]
-		if filename:
-			with open(filename, 'r') as file:
-				content = file.readlines()
-			Xline, Yline, Zline = content[0], content[1], content[2]
-			tmp1, tmp2 = [], []
-			for x in Xline.split('|'):
-				for j in x.split(', '):
-					tmp2.append(float(j))
-				tmp1.append(tmp2)
-			Xlist = numpy.array(tmp1)
-
-			tmp1, tmp2 = [], []
-			for y in Yline.split('|'):
-				for j in y.split(', '):
-					tmp2.append(float(j))
-				tmp1.append(tmp2)
-			Ylist = numpy.array(tmp1)
-
-			tmp1, tmp2 = [], []
-			for z in Zline.split('|'):
-				for j in z.split(', '):
-					tmp2.append(float(j))
-				tmp1.append(tmp2)
-			Zlist = numpy.array(tmp1)
-
-			Z = numpy.array([[0 for x in range(int(len(Xlist)/2))] for y in range(int(len(Ylist)/2))])
-
-			Zlist += Z
-
-			self.sliderSize.setValue(int(len(Xlist)/2))
-			self.ChangeSize()
-			self.grid = (Xlist, Ylist, Zlist)
-
-			self.showGrid(self.grid)
 	def ChangePrecision(self):
 		self.labelTickPrecision.setText(str(self.sliderPrecision.value()))
 	def ChangeSize(self):
@@ -262,12 +186,11 @@ class MainWindow(QMainWindow):
 		Z = numpy.array([[0 for x in range(len(X))] for y in range(len(Y))])
 		self.grid = (X, Y, Z)
 		self.showGrid(self.grid)
-	def visualize(self):
+	def visualizeRelief(self):
 		height  = self.sliderHeight .value()
 		offsetX = self.sliderOffsetX.value()
 		offsetY = self.sliderOffsetY.value()
 		Q       = self.sliderQ      .value()
-		self.z = 0
 		if Q != 0:
 			self.z = self.grid[2] + numpy.array(height * numpy.exp(-((self.grid[0] - offsetX)**2 + (self.grid[1] - offsetY)**2) / Q))
 			self.showGrid((self.grid[0], self.grid[1], self.z))
@@ -276,13 +199,13 @@ class MainWindow(QMainWindow):
 		offsetX = self.sliderOffsetX.value()
 		offsetY = self.sliderOffsetY.value()
 		Q       = self.sliderQ      .value()
-		self.z = 0
 		if Q != 0:
 			self.z = self.grid[2] + numpy.array(height * numpy.exp(-((self.grid[0] - offsetX)**2 + (self.grid[1] - offsetY)**2) / Q))
 			self.grid = (self.grid[0], self.grid[1], self.z)
 			self.showGrid(self.grid)
 	def showGrid(self, cells):
 		X, Y, Z = cells[0], cells[1], cells[2]
+
 		self.figure.clear()
 		ax = self.figure.gca(projection='3d')
 		ax.plot_surface(X, Y, Z, cmap = cm.coolwarm)
@@ -291,7 +214,39 @@ class MainWindow(QMainWindow):
 		ax.set_zlabel('Z')
 		ax.patch.set_facecolor('#F0F0F0')
 		self.canvas.draw()
+	def OpenFile(self):
+		filename = QFileDialog.getOpenFileName(self,"Load Archives","","Txt Files (*.txt)")[0]
+		if filename:
+			with open(filename, 'r') as file:
+				content = file.readlines()
+			Xline, Yline, Zline = content[0], content[1], content[2]
+			tmp1 = []
+			for x in Xline.split('|'):
+				tmp2 = []
+				for j in x.split(', '):
+					tmp2.append(float(j))
+				tmp1.append(tmp2)
+			Xlist = numpy.array(tmp1)
 
+			tmp1 = []
+			for y in Yline.split('|'):
+				tmp2 = []
+				for j in y.split(', '):
+					tmp2.append(float(j))
+				tmp1.append(tmp2)
+			Ylist = numpy.array(tmp1)
+
+			tmp1 = []
+			for z in Zline.split('|'):
+				tmp2 = []
+				for j in z.split(', '):
+					tmp2.append(float(j))
+				tmp1.append(tmp2)
+			Zlist = numpy.array(tmp1)
+			self.sliderSize.setValue(int(len(Xlist)/2))
+			self.ChangeSize()
+			self.grid = (Xlist, Ylist, Zlist)
+			self.showGrid(self.grid)
 	def ExportLMT(self):
 		filename = QFileDialog.getExistingDirectory(self, 'Choose Folder')
 		if filename:
@@ -339,6 +294,19 @@ class MainWindow(QMainWindow):
 			msg.show()
 			msg.exec_()
 			self.initGrid()
+	def ExportTXT(self):
+		filename = QFileDialog.getExistingDirectory(self, 'Choose Folder')
+		if filename:
+			Xttw, Yttw, Zttw = [], [], []
+			filename += f'/Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.txt'
+			for i in range(len(self.grid[0])):
+				Xttw.append(str(list(self.grid[0][i])))
+				Yttw.append(str(list(self.grid[1][i])))
+				Zttw.append(str(list(self.grid[2][i])))
+			with open(filename, 'w') as file:
+				file.write(('|'.join(Xttw)).replace('[', '').replace(']', '')+'\n')
+				file.write(('|'.join(Yttw)).replace('[', '').replace(']', '')+'\n')
+				file.write(('|'.join(Zttw)).replace('[', '').replace(']', ''))
 
 
 
