@@ -37,5 +37,5 @@
 ```
 "soil" is what will be used as floor, and "underground" is the blocks under the floor.
 The weight is the percentage of blocks linked to it.
-The total weight of a category has to be == 100
+The total weight of a category has to be == 100.
 You can freely change this config file as long as it's still in a JSON format.
