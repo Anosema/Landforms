@@ -1,6 +1,8 @@
-import sys, time, numpy
+import sys, numpy
+from datetime import datetime
 from os.path import expanduser
 from random import choices
+from time import time
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -230,43 +232,40 @@ class MainWindow(QMainWindow):
 
 	def buildRelief(self):
 		gridList = []
-		maxi, mini = 0, 0
+		maxi = 0
 		for i in range(len(self.grid[0])):
 			self.grid[0][i] += (len(self.grid[0][i]))/2
 			self.grid[1][i] += (len(self.grid[1][i]))/2
+			self.grid[2][i] += (len(self.grid[2][i]))/2
 			for blockIndex in range(len(self.grid[0][i])):
 				x, z, y = self.grid[0][i][blockIndex], self.grid[1][i][blockIndex], self.grid[2][i][blockIndex]
 				if int(y) > maxi: maxi = int(y)
-				if int(y) < mini: mini = int(y)
 				if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
-		# for i in gridList:
-			# i[2] += maxi
-		schem = Schematic(len(self.grid[0]), (maxi+abs(mini)+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
+
+		schem = Schematic(len(self.grid[0]), (maxi+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
 		reg = schem.regions["Main"]
 
 		dirt       = BlockState("minecraft:dirt")
 		podzol     = BlockState("minecraft:podzol")
 		coarseDirt = BlockState("minecraft:coarse_dirt")
 		grass      = BlockState("minecraft:grass_block")
-		Soils  = [dirt, podzol, coarseDirt, grass]
+		Soils  = [grass, dirt, podzol, coarseDirt]
 
 		stone       = BlockState("minecraft:stone")
 		cobblestone = BlockState("minecraft:cobblestone")
 		andesite    = BlockState("minecraft:andesite")
 		gravel      = BlockState("minecraft:gravel")
-		Stones = [stone, cobblestone, andesite, gravel, grass]
+		Stones = [stone, cobblestone, andesite, gravel, dirt]
 
-		t0 = time.time()
+		t0 = time()
 		for i in gridList:
-			x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=(10, 10, 10, 70), k=1)[0]
-			try: reg.setblock(x, y, z, block)
-			except Exception: print(x, y, z, block)
-			for j in range(mini, y):
+			x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=(91, 3, 3, 3), k=1)[0]
+			reg.setblock(x, y, z, block)
+			for j in range(y):
 				block = choices(Stones, weights=(80, 5, 5, 5, 5), k=1)[0]
-				try: reg.setblock(x, j, z, block)
-				except Exception: print(x, y, z, block)
-		schem.save(expanduser('~') + 'AppData\\Roaming\\.minecraft\\schematics\\Generator.litematic')
-		t1 = time.time()
+				reg.setblock(x, j, z, block)
+		schem.save(f'{expanduser("~")}\\AppData\\Roaming\\.minecraft\\schematics\\Generator{datetime.now().strftime("%d%m%Y_%H%M%S")}.litematic')
+		t1 = time()
 		process_time = t1-t0
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Information)
