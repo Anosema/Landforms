@@ -226,7 +226,7 @@ class MainWindow(QMainWindow):
 				tmp1.append(tmp2)
 			Zlist = numpy.array(tmp1)
 
-			Z = numpy.array([[0 for x in range(len(X))] for y in range(len(Y))])
+			Z = numpy.array([[0 for x in range(int(len(Xlist)/2))] for y in range(int(len(Ylist)/2))])
 
 			Zlist += Z
 
