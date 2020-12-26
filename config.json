@@ -1,0 +1,13 @@
+{
+	"soil": [
+		{"id":"minecraft:grass_block", "weight": 90},
+		{"id":"minecraft:coarse_dirt", "weight": 5},
+		{"id":"minecraft:podzol", "weight": 5}
+	],
+	"underground": [
+		{"id":"minecraft:stone", "weight": 80},
+		{"id":"minecraft:cobblestone", "weight": 5},
+		{"id":"minecraft:andesite", "weight": 5},
+		{"id":"minecraft:gravel", "weight": 5}
+	]
+}

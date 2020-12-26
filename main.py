@@ -1,4 +1,4 @@
-import sys, numpy
+import sys, numpy, json
 from datetime import datetime
 from os.path import expanduser
 from random import choices
@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
 
 	# Menu
 		self.menu = self.menuBar()
-		self.subMenuFile   = self.menu.addMenu('File')
+		self.subMenuFile = self.menu.addMenu('File')
 		self.buttonOpen = QAction('Open plot', self)
 		self.buttonOpen.triggered.connect(self.OpenFile)
 		self.subMenuFile.addAction(self.buttonOpen)
@@ -40,6 +40,7 @@ class MainWindow(QMainWindow):
 		self.buttonExportLitematic.triggered.connect(self.ExportLMT)
 		self.subMenuExport.addAction(self.buttonExportTxt), self.subMenuExport.addAction(self.buttonExportLitematic)
 
+		self.subMenuConfig = self.menu.addMenu('Config')
 
 
 
@@ -250,7 +251,8 @@ class MainWindow(QMainWindow):
 	def ExportLMT(self):
 		filename = QFileDialog.getExistingDirectory(self, 'Choose Folder')
 		if filename:
-			filename = filename.replace('/', '\\') + f'\\Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.litematic'
+			if os.name == 'nt': filename = filename.replace('/', '\\') + f'\\Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.litematic'
+			else: filename += f'/Generator_{datetime.now().strftime("%d%m%Y_%H%M%S")}.litematic'
 			gridList = []
 			maxi = 0
 			for i in range(len(self.grid[0])):
@@ -265,23 +267,27 @@ class MainWindow(QMainWindow):
 			schem = Schematic(len(self.grid[0]), (maxi+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
 			reg = schem.regions["Main"]
 	
-			podzol     = BlockState("minecraft:podzol")
-			coarseDirt = BlockState("minecraft:coarse_dirt")
-			grass      = BlockState("minecraft:grass_block")
-			Soils  = [grass, podzol, coarseDirt]
-	
-			stone       = BlockState("minecraft:stone")
-			cobblestone = BlockState("minecraft:cobblestone")
-			andesite    = BlockState("minecraft:andesite")
-			gravel      = BlockState("minecraft:gravel")
-			Stones = [stone, cobblestone, andesite, gravel, dirt]
-	
+			with open('config.json', 'r') as file:
+				data = json.load(file)
+			Soils = [BlockState(x['id']) for x in data['soil']]
+			SoilsWeights = tuple([x['weight'] for x in data['soil']])
+			
+			print(Soils)
+			print(SoilsWeights)
+
+			Stones = [BlockState(x['id']) for x in data['underground']]
+			StonesWeights = tuple([x['weight'] for x in data['underground']])
+
+			print(Stones)
+			print(StonesWeights)
+
+
 			t0 = time()
 			for i in gridList:
-				x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=(91, 3, 3), k=1)[0]
+				x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=SoilsWeights, k=1)[0]
 				reg.setblock(x, y, z, block)
 				for j in range(y):
-					block = choices(Stones, weights=(80, 5, 5, 5, 5), k=1)[0]
+					block = choices(Stones, weights=StonesWeights, k=1)[0]
 					reg.setblock(x, j, z, block)
 			schem.save(filename)
 			t1 = time()
