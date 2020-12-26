@@ -226,6 +226,10 @@ class MainWindow(QMainWindow):
 				tmp1.append(tmp2)
 			Zlist = numpy.array(tmp1)
 
+			Z = numpy.array([[0 for x in range(len(X))] for y in range(len(Y))])
+
+			Zlist += Z
+
 			self.sliderSize.setValue(int(len(Xlist)/2))
 			self.ChangeSize()
 			self.grid = (Xlist, Ylist, Zlist)
