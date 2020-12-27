@@ -75,7 +75,6 @@ class MainWindow(QMainWindow):
 		self.buttonReloadRelief.clicked.connect(self.initGrid)
 		self.buttonReloadRelief.setGeometry(5, 190, 190, 30)
 
-
 	# Reliefs
 		self.frameReliefs = QFrame(self)
 		self.frameReliefs.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
@@ -132,6 +131,9 @@ class MainWindow(QMainWindow):
 		self.labelTickQ = QLabel(str(self.sliderQ.value()), self.frameReliefs)
 		self.labelTickQ.setGeometry(15, 240, 25, 30)
 	# Visualize & Add
+		self.radioButtonLive = QRadioButton('Live Render', self.frameReliefs)
+		self.radioButtonLive.setGeometry(5, 280, 190, 30)
+
 		self.buttonVisRelief = QPushButton('Visualize', self.frameReliefs)
 		self.buttonVisRelief.clicked.connect(self.visualizeRelief)
 		self.buttonVisRelief.setGeometry(5, 310, 190, 30)
@@ -164,12 +166,16 @@ class MainWindow(QMainWindow):
 		self.sliderOffsetY.setRange(-self.sliderSize.value(), self.sliderSize.value())
 	def ChangeHeight(self):
 		self.labelTickHeight.setText(str(self.sliderHeight.value()))
+		if self.radioButtonLive.isChecked(): self.visualizeRelief()
 	def ChangeOffsetX(self):
 		self.labelTickOffsetX.setText(str(self.sliderOffsetX.value()))
+		if self.radioButtonLive.isChecked(): self.visualizeRelief()
 	def ChangeOffsetY(self):
 		self.labelTickOffsetY.setText(str(self.sliderOffsetY.value()))
+		if self.radioButtonLive.isChecked(): self.visualizeRelief()
 	def ChangeQ(self):
 		self.labelTickQ.setText(str(self.sliderQ.value()))
+		if self.radioButtonLive.isChecked(): self.visualizeRelief()
 	def ChangeGrid(self):
 		self.grid = self.initGrid()
 
