@@ -19,6 +19,7 @@ from mpl_toolkits.mplot3d import axes3d
 from litemapy import Schematic, Region, BlockState
 
 
+
 class MainWindow(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
 		self.setFixedWidth (800)
 		self.setFixedHeight(620)
 
+		self.f = lambda self, Ox, Oy, H, q: numpy.array(H * numpy.exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
 	# Menu
 		self.menu = self.menuBar()
 		self.subMenuFile = self.menu.addMenu('File')
@@ -156,6 +158,7 @@ class MainWindow(QMainWindow):
 		self.layout.addWidget(self.canvas) 
 		self.wid.setLayout(self.layout)
 	# Grid
+		self.reliefs = []
 		self.initGrid()
 
 	def ChangePrecision(self):
@@ -176,8 +179,6 @@ class MainWindow(QMainWindow):
 	def ChangeQ(self):
 		self.labelTickQ.setText(str(self.sliderQ.value()))
 		if self.radioButtonLive.isChecked(): self.visualizeRelief()
-	def ChangeGrid(self):
-		self.grid = self.initGrid()
 
 	def initGrid(self):
 		precision = self.sliderPrecision.value()/100
@@ -187,24 +188,26 @@ class MainWindow(QMainWindow):
 		x, y = numpy.meshgrid(X, Y)
 		X, Y = numpy.rint(x), numpy.rint(y)
 		Z = numpy.array([[0 for x in range(len(X))] for y in range(len(Y))])
-		self.grid = (X, Y, Z)
+		self.grid = [X, Y, Z]
+		for i in self.reliefs: self.grid[2] = self.grid[2] + self.f(self, i[0], i[1], i[2], i[3])
 		self.showGrid(self.grid)
 	def visualizeRelief(self):
-		height  = self.sliderHeight .value()
 		offsetX = self.sliderOffsetX.value()
 		offsetY = self.sliderOffsetY.value()
+		height  = self.sliderHeight .value()
 		Q       = self.sliderQ      .value()
 		if Q != 0:
-			self.z = self.grid[2] + numpy.array(height * numpy.exp(-((self.grid[0] - offsetX)**2 + (self.grid[1] - offsetY)**2) / Q))
+			self.z = self.grid[2] + self.f(self, offsetX, offsetY, height, Q)
 			self.showGrid((self.grid[0], self.grid[1], self.z))
 	def addRelief(self):
-		height  = self.sliderHeight .value()
 		offsetX = self.sliderOffsetX.value()
 		offsetY = self.sliderOffsetY.value()
+		height  = self.sliderHeight .value()
 		Q       = self.sliderQ      .value()
 		if Q != 0:
-			self.z = self.grid[2] + numpy.array(height * numpy.exp(-((self.grid[0] - offsetX)**2 + (self.grid[1] - offsetY)**2) / Q))
-			self.grid = (self.grid[0], self.grid[1], self.z)
+			self.reliefs.append((offsetX, offsetY, height, Q))
+			self.z = self.grid[2] + self.f(self, offsetX, offsetY, height, Q)
+			self.grid = [self.grid[0], self.grid[1], self.z]
 			self.showGrid(self.grid)
 	def showGrid(self, cells):
 		X, Y, Z = cells[0], cells[1], cells[2]
@@ -248,7 +251,7 @@ class MainWindow(QMainWindow):
 			Zlist = numpy.array(tmp1)
 			self.sliderSize.setValue(int(len(Xlist)/2))
 			self.ChangeSize()
-			self.grid = (Xlist, Ylist, Zlist)
+			self.grid = [Xlist, Ylist, Zlist]
 			self.showGrid(self.grid)
 	def ExportLMT(self):
 		filename = QFileDialog.getSaveFileName(self,"Save Schematic","","Litematic Files (*.litematic)")[0]
