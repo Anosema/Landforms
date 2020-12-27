@@ -212,10 +212,8 @@ class MainWindow(QMainWindow):
 	def initGrid(self):
 		precision = self.sliderPrecision.value()/100
 		size      = self.sliderSize     .value()
-		Y = numpy.arange(-size, size+1, precision)
-		X = numpy.arange(-size, size+1, precision)
-		x, y = numpy.meshgrid(X, Y)
-		X, Y = numpy.rint(x), numpy.rint(y)
+		Y = X = numpy.arange(-size, size+1, precision)
+		X, Y = numpy.meshgrid(X, Y)
 		Z = numpy.array([[0 for x in range(len(X))] for y in range(len(Y))])
 		self.grid = [X, Y, Z]
 		for i in self.reliefs: self.grid[2] = self.grid[2] + self.f(self, i[0], i[1], i[2], i[3])
