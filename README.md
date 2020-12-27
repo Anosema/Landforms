@@ -4,6 +4,7 @@
 ### Grid Settings
 - Precision : Step between two consecutive values multiplied by 100 (ex : 100 means only one value will be calculated between 1 and 2). Lower the precision get, heavier get the calculs;
 - Size : Size divided by 2 (ex : a size of 5 will give an area of 10\*10)
+- The "Reset Grid" button will erase EVERY reliefs
 - The "Reload Grid" button apply the change you did
 
 ### Relief Settings
@@ -11,12 +12,14 @@
 - OffsetX : offset between (0, 0) and the (x,y) of the peak on X axis
 - OffsetY : offset between (0, 0) and the (x,y) of the peak on Y axis
 - Q : A weird thing, higher is the Q fatter is the peak.
-- The "Visualize" button show you the plot with the actual relief without adding it to the plot, you can change his settings
-- The "Add Relief" button ADD the actual relief to the plot, you **CANNOT CHANGE HIS SETTINGS**
+- The "Live Render" radio button will visualize the relief in real time, as you change it's settings. **IT CAN SLOW YOUR COMPUTER A LOT IF NOT POWERFUL ENOUGH**
+- The "Visualize" button show you the plot with the actual relief without adding it to the plot, you can change it's settings
+- The "Add Relief" button add the actual relief to the plot
+- The arrows on top of the window is the undo and redo buttons.
 
 ## File Management
-- You can open a saved by clicking "File" > "Open plot" and choosing a previously saved plot as txt
-- You can export the plot as txt or as a litematic by clicking "File" > "Export" and choosing your option
+- You can open a saved by clicking the file icon and choosing a previously saved plot as txt
+- You can export the plot as txt or as a litematic by clicking the floppy disk icon and choosing your option
 
 ## Config File
 - You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
