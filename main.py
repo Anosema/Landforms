@@ -25,37 +25,43 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		self.setWindowTitle('Relief Generator')
 		self.setFixedWidth (800)
-		self.setFixedHeight(623)
+		self.setFixedHeight(630)
 
 		self.f = lambda self, Ox, Oy, H, q: numpy.array(H * numpy.exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
 	# Undo/Redo
-		self.undoAction = QAction('⟲', self)
-		self.undoAction.setShortcut('Ctrl+Z')
-		self.undoAction.triggered.connect(self.undo)
-		self.redoAction = QAction('⟳', self)
-		self.redoAction.setShortcut('Ctrl+Y')
-		self.redoAction.triggered.connect(self.redo)
 
 	# Menu
-		self.menu = self.menuBar()
-		self.subMenuFile = self.menu.addMenu('File')
-		self.buttonOpen = QAction('Open plot', self)
-		self.buttonOpen.triggered.connect(self.OpenFile)
-		self.subMenuFile.addAction(self.buttonOpen)
+		# self.menu = self.menuBar()
+		self.menu = QToolBar(self)
+		self.menu.setGeometry(0, 0, 800, 30)
 
-		self.subMenuExport = self.subMenuFile.addMenu('Export')
-		self.buttonExportTxt = QAction('Export as txt', self)
-		self.buttonExportTxt.triggered.connect(self.ExportTXT)
-		self.buttonExportLitematic = QAction('Export as Litematic', self)
-		self.buttonExportLitematic.triggered.connect(self.ExportLMT)
-		self.subMenuExport.addAction(self.buttonExportTxt), self.subMenuExport.addAction(self.buttonExportLitematic)
+		self.buttonOpen   = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon)     , 'Open plot', self)
+		self.buttonExport = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton), 'Export as txt', self)
+		self.undoAction   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowLeft)       , 'Undo', self)
+		self.redoAction   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowRight)      , 'Redo', self)
 
-		self.menu.addAction(self.undoAction), self.menu.addAction(self.redoAction)
+
+		self.redoAction.setShortcut('Ctrl+Y')
+		self.undoAction.setShortcut('Ctrl+Z')
+		
+		self.buttonOpen  .triggered.connect(self.OpenFile)
+		self.buttonExport.triggered.connect(self.saveFile)
+		self.undoAction  .triggered.connect(self.undo)
+		self.redoAction  .triggered.connect(self.redo)
+		
+		self.menu.addAction(self.buttonOpen)
+		self.menu.addAction(self.buttonExport)
+		self.menu.addSeparator()
+		self.menu.addAction(self.undoAction)
+		self.menu.addAction(self.redoAction)
+		
+		self.menu.setFloatable(False), self.menu.setMovable(False)
+
 
 	# Options
 		self.frameOptions = QFrame(self)
 		self.frameOptions.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameOptions.setGeometry(0, 22, 200, 225)
+		self.frameOptions.setGeometry(0, 30, 200, 225)
 		self.labelTitleOptions = QLabel('Change Grid Config', self.frameOptions)
 		self.labelTitleOptions.setGeometry(5, 5, 190, 30)
 		self.labelTitleOptions.setAlignment(Qt.AlignCenter)
@@ -94,7 +100,7 @@ class MainWindow(QMainWindow):
 	# Reliefs
 		self.frameReliefs = QFrame(self)
 		self.frameReliefs.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameReliefs.setGeometry(0, 247, 200, 375)
+		self.frameReliefs.setGeometry(0, 255, 200, 375)
 		self.labelTitleReliefs = QLabel('Add New Relief', self.frameReliefs)
 		self.labelTitleReliefs.setGeometry(5, 5, 190, 30)
 		self.labelTitleReliefs.setAlignment(Qt.AlignCenter)
@@ -161,7 +167,7 @@ class MainWindow(QMainWindow):
 	# Graph
 		self.frameGraph = QFrame(self)
 		self.frameGraph.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameGraph.setGeometry(200, 22, 600, 600)
+		self.frameGraph.setGeometry(200, 30, 600, 600)
 		self.figure = plt.figure()
 		self.figure.patch.set_facecolor('#F0F0F0')
 		self.canvas  = FigureCanvas(self.figure)
@@ -248,7 +254,7 @@ class MainWindow(QMainWindow):
 		if filename:
 			with open(filename, 'r') as file:
 				content = file.readlines()
-			Xline, Yline, Zline = content[0], content[1], content[2]
+			Xline, Yline, Zline, Rline = content[0], content[1], content[2], content[3]
 			tmp1 = []
 			for x in Xline.split('|'):
 				tmp2 = []
@@ -272,80 +278,86 @@ class MainWindow(QMainWindow):
 					tmp2.append(float(j))
 				tmp1.append(tmp2)
 			Zlist = numpy.array(tmp1)
+
+			tmp1 = []
+			for r in Rline.split('|'):
+				tmp2 = []
+				for j in r.split(', '):
+					tmp2.append(float(j))
+				tmp1.append(tuple(tmp2))
+			self.reliefs = tmp1
+
 			self.sliderSize.setValue(int(len(Xlist)/2))
 			self.ChangeSize()
 			self.grid = [Xlist, Ylist, Zlist]
 			self.showGrid(self.grid)
-	def ExportLMT(self):
-		filename = QFileDialog.getSaveFileName(self,"Save Schematic","","Litematic Files (*.litematic)")[0]
-		if filename:
-			filename += '.litematic'
-			gridList = []
-			maxi = 0
-			for i in range(len(self.grid[0])):
-				self.grid[0][i] += (len(self.grid[0][i]))/2
-				self.grid[1][i] += (len(self.grid[1][i]))/2
-				self.grid[2][i] += (len(self.grid[2][i]))/2
-				for j in range(len(self.grid[0][i])):
-					x, z, y = self.grid[0][i][j], self.grid[1][i][j], self.grid[2][i][j]
-					if int(y) > maxi: maxi = int(y)
-					if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
-	
-			schem = Schematic(len(self.grid[0]), (maxi+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
-			reg = schem.regions["Main"]
-	
-			with open('config.json', 'r') as file:
-				data = json.load(file)
-			Soils = [BlockState(x['id']) for x in data['soil']]
-			SoilsWeights = tuple([x['weight'] for x in data['soil']])
-			
-			print(Soils)
-			print(SoilsWeights)
+	def saveFile(self):
+		filename = QFileDialog.getSaveFileName(self,"Save Schematic","","Litematic Files (*.litematic);;Txt Files (*.txt)")
+		if filename[0]:
+			if '.litematic' in filename[1]: self.ExportLMT(filename[0])
+			else: self.ExportTXT(filename[0])
+	def ExportLMT(self, filename):
+		if '.litematic' not in filename: filename += '.litematic'
+		gridList = []
+		maxi = 0
+		for i in range(len(self.grid[0])):
+			self.grid[0][i] += (len(self.grid[0][i]))/2
+			self.grid[1][i] += (len(self.grid[1][i]))/2
+			self.grid[2][i] += (len(self.grid[2][i]))/2
+			for j in range(len(self.grid[0][i])):
+				x, z, y = self.grid[0][i][j], self.grid[1][i][j], self.grid[2][i][j]
+				if int(y) > maxi: maxi = int(y)
+				if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
 
-			Stones = [BlockState(x['id']) for x in data['underground']]
-			StonesWeights = tuple([x['weight'] for x in data['underground']])
+		schem = Schematic(len(self.grid[0]), (maxi+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
+		reg = schem.regions["Main"]
 
-			print(Stones)
-			print(StonesWeights)
+		with open('config.json', 'r') as file:
+			data = json.load(file)
+		Soils = [BlockState(x['id']) for x in data['soil']]
+		SoilsWeights = tuple([x['weight'] for x in data['soil']])
 
+		Stones = [BlockState(x['id']) for x in data['underground']]
+		StonesWeights = tuple([x['weight'] for x in data['underground']])
 
-			t0 = time()
-			for i in gridList:
-				x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=SoilsWeights, k=1)[0]
-				reg.setblock(x, y, z, block)
-				for j in range(y):
-					block = choices(Stones, weights=StonesWeights, k=1)[0]
-					reg.setblock(x, j, z, block)
-			schem.save(filename)
-			t1 = time()
-			process_time = t1-t0
-			msg = QMessageBox()
-			msg.setIcon(QMessageBox.Information)
-			msg.setText("Your Litematic is ready, finished in")
-			msg.setInformativeText(str(int(process_time*10)/10) + 's')
-			msg.setWindowTitle("Finished")
-			msg.show()
-			msg.exec_()
-			self.initGrid()
-	def ExportTXT(self):
-		filename = QFileDialog.getSaveFileName(self,"Save Plot","","Text Files (*.txt)")[0]
-		if filename:
-			filename += '.txt'
-			Xttw, Yttw, Zttw = [], [], []
-			for i in range(len(self.grid[0])):
-				Xttw.append(str(list(self.grid[0][i])))
-				Yttw.append(str(list(self.grid[1][i])))
-				Zttw.append(str(list(self.grid[2][i])))
-			with open(filename, 'w') as file:
-				file.write(('|'.join(Xttw)).replace('[', '').replace(']', '')+'\n')
-				file.write(('|'.join(Yttw)).replace('[', '').replace(']', '')+'\n')
-				file.write(('|'.join(Zttw)).replace('[', '').replace(']', ''))
-			msg = QMessageBox()
-			msg.setIcon(QMessageBox.Information)
-			msg.setText("Your Save is ready")
-			msg.setWindowTitle("Finished")
-			msg.show()
-			msg.exec_()
+		t0 = time()
+		for i in gridList:
+			x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=SoilsWeights, k=1)[0]
+			reg.setblock(x, y, z, block)
+			for j in range(y):
+				block = choices(Stones, weights=StonesWeights, k=1)[0]
+				reg.setblock(x, j, z, block)
+		schem.save(filename)
+		t1 = time()
+		process_time = t1-t0
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Information)
+		msg.setText("Your Litematic is ready, finished in")
+		msg.setInformativeText(str(int(process_time*10)/10) + 's')
+		msg.setWindowTitle("Finished")
+		msg.show()
+		msg.exec_()
+
+	def ExportTXT(self, filename):
+		if '.txt' not in filename: filename += '.txt'
+		Xttw, Yttw, Zttw, Rttw = [], [], [], []
+		for i in range(len(self.grid[0])):
+			Xttw.append(str(list(self.grid[0][i])))
+			Yttw.append(str(list(self.grid[1][i])))
+			Zttw.append(str(list(self.grid[2][i])))
+		for i in self.reliefs:
+			Rttw.append(str(list(i)))
+		with open(filename, 'w') as file:
+			file.write(('|'.join(Xttw)).replace('[', '').replace(']', '')+'\n')
+			file.write(('|'.join(Yttw)).replace('[', '').replace(']', '')+'\n')
+			file.write(('|'.join(Zttw)).replace('[', '').replace(']', '')+'\n')
+			file.write(('|'.join(Rttw)).replace('[', '').replace(']', ''))
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Information)
+		msg.setText("Your Save is ready")
+		msg.setWindowTitle("Finished")
+		msg.show()
+		msg.exec_()
 
 
 
