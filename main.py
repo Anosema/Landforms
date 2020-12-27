@@ -25,9 +25,17 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		self.setWindowTitle('Relief Generator')
 		self.setFixedWidth (800)
-		self.setFixedHeight(620)
+		self.setFixedHeight(623)
 
 		self.f = lambda self, Ox, Oy, H, q: numpy.array(H * numpy.exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
+	# Undo/Redo
+		self.undoAction = QAction('⟲', self)
+		self.undoAction.setShortcut('Ctrl+Z')
+		self.undoAction.triggered.connect(self.undo)
+		self.redoAction = QAction('⟳', self)
+		self.redoAction.setShortcut('Ctrl+Y')
+		self.redoAction.triggered.connect(self.redo)
+
 	# Menu
 		self.menu = self.menuBar()
 		self.subMenuFile = self.menu.addMenu('File')
@@ -42,10 +50,12 @@ class MainWindow(QMainWindow):
 		self.buttonExportLitematic.triggered.connect(self.ExportLMT)
 		self.subMenuExport.addAction(self.buttonExportTxt), self.subMenuExport.addAction(self.buttonExportLitematic)
 
+		self.menu.addAction(self.undoAction), self.menu.addAction(self.redoAction)
+
 	# Options
 		self.frameOptions = QFrame(self)
 		self.frameOptions.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameOptions.setGeometry(0, 20, 200, 225)
+		self.frameOptions.setGeometry(0, 22, 200, 225)
 		self.labelTitleOptions = QLabel('Change Grid Config', self.frameOptions)
 		self.labelTitleOptions.setGeometry(5, 5, 190, 30)
 		self.labelTitleOptions.setAlignment(Qt.AlignCenter)
@@ -73,14 +83,18 @@ class MainWindow(QMainWindow):
 		self.labelTickSize = QLabel(str(self.sliderSize.value()), self.frameOptions)
 		self.labelTickSize.setGeometry(15, 120, 25, 30)
 	# Reload
-		self.buttonReloadRelief = QPushButton('Reload Grid', self.frameOptions)
-		self.buttonReloadRelief.clicked.connect(self.initGrid)
-		self.buttonReloadRelief.setGeometry(5, 190, 190, 30)
+		self.buttonResetGrid = QPushButton('Reset Grid', self.frameOptions)
+		self.buttonResetGrid.clicked.connect(self.resetGrid)
+		self.buttonResetGrid.setGeometry(5, 160, 190, 30)
+
+		self.buttonReloadGrid = QPushButton('Reload Grid', self.frameOptions)
+		self.buttonReloadGrid.clicked.connect(self.initGrid)
+		self.buttonReloadGrid.setGeometry(5, 190, 190, 30)
 
 	# Reliefs
 		self.frameReliefs = QFrame(self)
 		self.frameReliefs.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameReliefs.setGeometry(0, 245, 200, 375)
+		self.frameReliefs.setGeometry(0, 247, 200, 375)
 		self.labelTitleReliefs = QLabel('Add New Relief', self.frameReliefs)
 		self.labelTitleReliefs.setGeometry(5, 5, 190, 30)
 		self.labelTitleReliefs.setAlignment(Qt.AlignCenter)
@@ -147,7 +161,7 @@ class MainWindow(QMainWindow):
 	# Graph
 		self.frameGraph = QFrame(self)
 		self.frameGraph.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameGraph.setGeometry(200, 20, 600, 600)
+		self.frameGraph.setGeometry(200, 22, 600, 600)
 		self.figure = plt.figure()
 		self.figure.patch.set_facecolor('#F0F0F0')
 		self.canvas  = FigureCanvas(self.figure)
@@ -158,7 +172,7 @@ class MainWindow(QMainWindow):
 		self.layout.addWidget(self.canvas) 
 		self.wid.setLayout(self.layout)
 	# Grid
-		self.reliefs = []
+		self.reliefs, self.oldReliefs = [], []
 		self.initGrid()
 
 	def ChangePrecision(self):
@@ -179,6 +193,15 @@ class MainWindow(QMainWindow):
 	def ChangeQ(self):
 		self.labelTickQ.setText(str(self.sliderQ.value()))
 		if self.radioButtonLive.isChecked(): self.visualizeRelief()
+
+	def resetGrid(self):
+		self.reliefs = []
+		self.initGrid()
+
+	def undo(self):
+		if self.reliefs != []: self.oldReliefs.append(self.reliefs.pop()), self.initGrid()
+	def redo(self):
+		if self.oldReliefs != []: self.reliefs.append(self.oldReliefs.pop()), self.initGrid()
 
 	def initGrid(self):
 		precision = self.sliderPrecision.value()/100
