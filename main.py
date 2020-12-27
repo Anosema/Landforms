@@ -23,7 +23,7 @@ from litemapy import Schematic, Region, BlockState
 class MainWindow(QMainWindow):
 	def __init__(self):
 		super().__init__()
-		self.setWindowTitle('Relief Generator')
+		self.setWindowTitle('Landform Generator')
 		self.setFixedWidth (800)
 		self.setFixedHeight(630)
 
@@ -300,10 +300,17 @@ class MainWindow(QMainWindow):
 		if '.litematic' not in filename: filename += '.litematic'
 		gridList = []
 		maxi = 0
+		bzero = False
+
+		for i in self.grid[2]:
+			if i.any() < 0:
+				bzero = True
+				break
+
 		for i in range(len(self.grid[0])):
 			self.grid[0][i] += (len(self.grid[0][i]))/2
 			self.grid[1][i] += (len(self.grid[1][i]))/2
-			self.grid[2][i] += (len(self.grid[2][i]))/2
+			if bzero: self.grid[2][i] += (len(self.grid[2][i]))/2
 			for j in range(len(self.grid[0][i])):
 				x, z, y = self.grid[0][i][j], self.grid[1][i][j], self.grid[2][i][j]
 				if int(y) > maxi: maxi = int(y)
