@@ -1,15 +1,15 @@
 # Landforms Generator
 
 ## Index
-- [Prerequisite](https://github.com/Anosema/Landforms/Prerequisite)
-- [Main Interface](https://github.com/Anosema/Landforms/Main-Interface)
-	- [Grid Settings](https://github.com/Anosema/Landforms/Grid-Settings)
-	- [Relief Settings](https://github.com/Anosema/Landforms/Relief-Settings)
-	- [Tool Bar](https://github.com/Anosema/Landforms/Tool-Bar)
-	- [Shortcuts](https://github.com/Anosema/Landforms/Shortcuts)
-- [Config File](https://github.com/Anosema/Landforms/Config-File)
-	- [Layer Mode](https://github.com/Anosema/Landforms/Layer-Mode)
-	- [Landscape Mode](https://github.com/Anosema/Landforms/Landscape-Mode)
+- [Prerequisite](https://github.com/Anosema/Landforms#Prerequisite)
+- [Main Interface](https://github.com/Anosema/Landforms#Main-Interface)
+	- [Grid Settings](https://github.com/Anosema/Landforms#Grid-Settings)
+	- [Relief Settings](https://github.com/Anosema/Landforms#Relief-Settings)
+	- [Tool Bar](https://github.com/Anosema/Landforms#Tool-Bar)
+	- [Shortcuts](https://github.com/Anosema/Landforms#Shortcuts)
+- [Config File](https://github.com/Anosema/Landforms#Config-File)
+	- [Layer Mode](https://github.com/Anosema/Landforms#Layer-Mode)
+	- [Landscape Mode](https://github.com/Anosema/Landforms#Landscape-Mode)
 
 ## Prerequisite
 Make sure to have run `pip install -r requirements.txt` to install requiered modules
