@@ -28,12 +28,10 @@ class MainWindow(QMainWindow):
 		self.setFixedHeight(630)
 
 		self.f = lambda self, Ox, Oy, H, q: numpy.array(H * numpy.exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
-	# Undo/Redo
 
 	# Menu
-		# self.menu = self.menuBar()
-		self.menu = QToolBar(self)
-		self.menu.setGeometry(0, 0, 800, 30)
+		self.toolb = QToolBar(self)
+		self.toolb.setGeometry(0, 0, 800, 30)
 
 		self.buttonOpen   = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon)     , 'Open plot', self)
 		self.buttonExport = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton), 'Export as txt', self)
@@ -49,13 +47,13 @@ class MainWindow(QMainWindow):
 		self.undoAction  .triggered.connect(self.undo)
 		self.redoAction  .triggered.connect(self.redo)
 		
-		self.menu.addAction(self.buttonOpen)
-		self.menu.addAction(self.buttonExport)
-		self.menu.addSeparator()
-		self.menu.addAction(self.undoAction)
-		self.menu.addAction(self.redoAction)
+		self.toolb.addAction(self.buttonOpen)
+		self.toolb.addAction(self.buttonExport)
+		self.toolb.addSeparator()
+		self.toolb.addAction(self.undoAction)
+		self.toolb.addAction(self.redoAction)
 		
-		self.menu.setFloatable(False), self.menu.setMovable(False)
+		self.toolb.setFloatable(False), self.toolb.setMovable(False)
 
 
 	# Options

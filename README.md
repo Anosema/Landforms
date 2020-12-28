@@ -1,5 +1,8 @@
 # Landforms Generator
 
+## Prerequisite
+- Make sure to have run `pip install -r requirements.txt` to install requiered modules
+
 ## Main Interface
 ### Grid Settings
 - Precision : Step between two consecutive values multiplied by 100 (ex : 100 means only one value will be calculated between 1 and 2). Lower the precision get, heavier get the calculs;
