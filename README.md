@@ -18,7 +18,23 @@
 - The "Live Render" radio button will visualize the relief in real time, as you change it's settings. **IT CAN SLOW YOUR COMPUTER A LOT IF NOT POWERFUL ENOUGH**
 - The "Visualize" button show you the plot with the actual relief without adding it to the plot, you can change it's settings
 - The "Add Relief" button add the actual relief to the plot
-- The arrows on top of the window is the undo and redo buttons
+- Tool Bar :
+	- Open File button to open a vaid txt plot save
+	- Export plot as a txt file or a litematic
+	- Undo button
+	- Redo button
+	- Add Relief button
+	- Reload Grid button
+	- Live Render button
+
+### Shortcuts
+- Ctrl+O : Open File
+- Ctrl+E : Export File
+- Ctrl+Z : Undo
+- Ctrl+Y : Redo
+- Ctrl+A : Add Relief
+- Ctrl+R : Reload Grid
+- Ctrl+L : Live Render
 
 ## File Management
 - You can open a saved by clicking the file icon and choosing a previously saved plot as txt
@@ -28,6 +44,7 @@
 - You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
 ```json
 {
+	"isLayered": true,
 	"soil": [
 		{"id":"minecraft:grass_block", "weight": 90},
 		{"id":"minecraft:coarse_dirt", "weight": 5},
@@ -38,10 +55,17 @@
 		{"id":"minecraft:cobblestone", "weight": 5},
 		{"id":"minecraft:andesite", "weight": 5},
 		{"id":"minecraft:gravel", "weight": 5}
+	],
+	"layer": [
+		{"id":"minecraft:red_concrete"},
+		{"id":"minecraft:orange_concrete"},
+		{"id":"minecraft:blue_concrete"},
+		{"id":"minecraft:green_concrete"}
 	]
 }
 ```
-"soil" is what will be used as floor, and "underground" is the blocks under the floor.
+If `isLayered` is set to true, the litematic will use the block list `layer`.
+`soil` is what will be used as floor, and `underground` is the blocks under the floor.
 The weight is the percentage of blocks linked to it.
 The total weight of a category has to be == 100.
 You can freely change this config file as long as it's still in a JSON format.

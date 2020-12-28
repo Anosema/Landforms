@@ -1,8 +1,10 @@
-import sys, numpy, json
-from datetime import datetime
+from numpy import array, exp, arrange, meshgrid
 from os.path import expanduser
+from datetime import datetime
 from random import choices
+from json import load
 from time import time
+from sys import argv
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -27,33 +29,9 @@ class MainWindow(QMainWindow):
 		self.setFixedWidth (800)
 		self.setFixedHeight(630)
 
-		self.f = lambda self, Ox, Oy, H, q: numpy.array(H * numpy.exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
-
-	# Menu
-		self.toolb = QToolBar(self)
-		self.toolb.setGeometry(0, 0, 800, 30)
-
-		self.buttonOpen   = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon)     , 'Open plot', self)
-		self.buttonExport = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton), 'Export as txt', self)
-		self.undoAction   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowLeft)       , 'Undo', self)
-		self.redoAction   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowRight)      , 'Redo', self)
+		self.f = lambda self, Ox, Oy, H, q: array(H * exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
 
 
-		self.redoAction.setShortcut('Ctrl+Y')
-		self.undoAction.setShortcut('Ctrl+Z')
-		
-		self.buttonOpen  .triggered.connect(self.OpenFile)
-		self.buttonExport.triggered.connect(self.saveFile)
-		self.undoAction  .triggered.connect(self.undo)
-		self.redoAction  .triggered.connect(self.redo)
-		
-		self.toolb.addAction(self.buttonOpen)
-		self.toolb.addAction(self.buttonExport)
-		self.toolb.addSeparator()
-		self.toolb.addAction(self.undoAction)
-		self.toolb.addAction(self.redoAction)
-		
-		self.toolb.setFloatable(False), self.toolb.setMovable(False)
 
 
 	# Options
@@ -175,6 +153,51 @@ class MainWindow(QMainWindow):
 		self.layout.addWidget(self.toolbar) 
 		self.layout.addWidget(self.canvas) 
 		self.wid.setLayout(self.layout)
+
+	# Menu
+		self.toolb = QToolBar(self)
+		self.toolb.setGeometry(0, 0, 800, 30)
+
+		self.ActionOpen   = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon)     , 'Open plot', self)
+		self.ActionExport = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton), 'Export as txt', self)
+		self.ActionUndo   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowLeft)       , 'Undo', self)
+		self.ActionRedos   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowRight)      , 'Redo', self)
+		self.ActionAddR   = QAction('A' , self)
+		self.ActionReload = QAction('R', self)
+		self.ActionLiveRd = QAction('L', self)
+
+		self.ActionAddR  .setToolTip('Add Relief')
+		self.ActionReload.setToolTip('Reload Grid')
+		self.ActionLiveRd.setToolTip('Live Render')
+
+		self.ActionOpen  .setShortcut('Ctrl+O')
+		self.ActionExport.setShortcut('Ctrl+E')
+		self.ActionUndo  .setShortcut('Ctrl+Z')
+		self.ActionRedo  .setShortcut('Ctrl+Y')
+		self.ActionAddR  .setShortcut('Ctrl+A')
+		self.ActionReload.setShortcut('Ctrl+R')
+		self.ActionLiveRd.setShortcut('Ctrl+L')
+
+		self.ActionOpen  .triggered.connect(self.openFile)
+		self.ActionExport.triggered.connect(self.saveFile)
+		self.ActionUndo  .triggered.connect(self.undo)
+		self.ActionRedo  .triggered.connect(self.redo)
+		self.ActionAddR  .triggered.connect(self.addRelief)
+		self.ActionReload.triggered.connect(self.initGrid)
+		self.ActionLiveRd.triggered.connect(self.radioButtonLive.toggle)
+
+		self.toolb.addAction(self.ActionOpen)
+		self.toolb.addAction(self.ActionExport)
+		self.toolb.addSeparator()
+		self.toolb.addAction(self.ActionUndo)
+		self.toolb.addAction(self.ActionRedo)
+		self.toolb.addSeparator()
+		self.toolb.addAction(self.ActionAddR)
+		self.toolb.addAction(self.ActionReload)
+		self.toolb.addAction(self.ActionLiveRd)
+
+		self.toolb.setFloatable(False), self.toolb.setMovable(False)
+
 	# Grid
 		self.reliefs, self.oldReliefs = [], []
 		self.initGrid()
@@ -210,9 +233,9 @@ class MainWindow(QMainWindow):
 	def initGrid(self):
 		precision = self.sliderPrecision.value()/100
 		size      = self.sliderSize     .value()
-		Y = X = numpy.arange(-size, size+1, precision)
-		X, Y = numpy.meshgrid(X, Y)
-		Z = numpy.array([[0 for x in range(len(X))] for y in range(len(Y))])
+		Y = X = arange(-size, size+1, precision)
+		X, Y = meshgrid(X, Y)
+		Z = array([[0 for x in range(len(X))] for y in range(len(Y))])
 		self.grid = [X, Y, Z]
 		for i in self.reliefs: self.grid[2] = self.grid[2] + self.f(self, i[0], i[1], i[2], i[3])
 		self.showGrid(self.grid)
@@ -245,7 +268,7 @@ class MainWindow(QMainWindow):
 		ax.set_zlabel('Z')
 		ax.patch.set_facecolor('#F0F0F0')
 		self.canvas.draw()
-	def OpenFile(self):
+	def openFile(self):
 		filename = QFileDialog.getOpenFileName(self,"Load Archives","","Txt Files (*.txt)")[0]
 		if filename:
 			with open(filename, 'r') as file:
@@ -257,7 +280,7 @@ class MainWindow(QMainWindow):
 				for j in x.split(', '):
 					tmp2.append(float(j))
 				tmp1.append(tmp2)
-			Xlist = numpy.array(tmp1)
+			Xlist = array(tmp1)
 
 			tmp1 = []
 			for y in Yline.split('|'):
@@ -265,7 +288,7 @@ class MainWindow(QMainWindow):
 				for j in y.split(', '):
 					tmp2.append(float(j))
 				tmp1.append(tmp2)
-			Ylist = numpy.array(tmp1)
+			Ylist = array(tmp1)
 
 			tmp1 = []
 			for z in Zline.split('|'):
@@ -273,7 +296,7 @@ class MainWindow(QMainWindow):
 				for j in z.split(', '):
 					tmp2.append(float(j))
 				tmp1.append(tmp2)
-			Zlist = numpy.array(tmp1)
+			Zlist = array(tmp1)
 
 			tmp1 = []
 			for r in Rline.split('|'):
@@ -316,19 +339,22 @@ class MainWindow(QMainWindow):
 		reg = schem.regions["Main"]
 
 		with open('config.json', 'r') as file:
-			data = json.load(file)
+			data = load(file)
 		Soils = [BlockState(x['id']) for x in data['soil']]
 		SoilsWeights = tuple([x['weight'] for x in data['soil']])
 
 		Stones = [BlockState(x['id']) for x in data['underground']]
 		StonesWeights = tuple([x['weight'] for x in data['underground']])
 
+		Layers = [BlockState(x['id'] for x in data['layer'])]
+
 		t0 = time()
 		for i in gridList:
 			x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=SoilsWeights, k=1)[0]
 			reg.setblock(x, y, z, block)
 			for j in range(y):
-				block = choices(Stones, weights=StonesWeights, k=1)[0]
+				if data['isLayered']: block = choices(Stones, weights=StonesWeights, k=1)[0]
+				else: block = Layers[-(round(len(y)/j))]
 				reg.setblock(x, j, z, block)
 		schem.save(filename)
 		t1 = time()

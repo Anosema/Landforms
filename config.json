@@ -1,4 +1,5 @@
 {
+	"isLayered": true,
 	"soil": [
 		{"id":"minecraft:grass_block", "weight": 90},
 		{"id":"minecraft:coarse_dirt", "weight": 5},
@@ -9,5 +10,11 @@
 		{"id":"minecraft:cobblestone", "weight": 5},
 		{"id":"minecraft:andesite", "weight": 5},
 		{"id":"minecraft:gravel", "weight": 5}
+	],
+	"layer": [
+		{"id":"minecraft:red_concrete"},
+		{"id":"minecraft:orange_concrete"},
+		{"id":"minecraft:blue_concrete"},
+		{"id":"minecraft:green_concrete"}
 	]
 }

@@ -1,10 +1,9 @@
 - Shortcuts :
-- [ ] add relief
-- [ ] live render
-- [ ] relaod grid
-- [ ] reset grid
-- [ ] open file
-- [ ] export
+- [x] add relief
+- [x] live render
+- [x] relaod grid
+- [x] open file
+- [x] export
 
-Layers litematic :
-- [ ] allow layers mode in config.json
+- Layers litematic :
+- [x] allow layers mode in config.json
