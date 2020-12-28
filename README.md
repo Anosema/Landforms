@@ -1,8 +1,10 @@
 # Landforms Generator
 
+---
 ## Prerequisite
 - Make sure to have run `pip install -r requirements.txt` to install requiered modules
 
+---
 ## Main Interface
 ### Grid Settings
 - Precision : Step between two consecutive values multiplied by 100 (ex : 100 means only one value will be calculated between 1 and 2). Lower the precision get, heavier get the calculs
@@ -37,10 +39,12 @@
 - Ctrl+R : Reload Grid
 - Ctrl+L : Live Render
 
+---
 ## File Management
 - You can open a saved by clicking the file icon and choosing a previously saved plot as txt
 - You can export the plot as txt or as a litematic by clicking the floppy disk icon and choosing your option
-
+---
+---
 # Config File
 - You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
 ```json
