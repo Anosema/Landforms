@@ -1,3 +1,4 @@
+
 # Landforms Generator
 
 ---
@@ -43,7 +44,8 @@
 ## File Management
 - You can open a saved by clicking the file icon and choosing a previously saved plot as txt
 - You can export the plot as txt or as a litematic by clicking the floppy disk icon and choosing your option
----
+
+
 ---
 # Config File
 - You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
