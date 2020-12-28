@@ -26,7 +26,7 @@
 
 # Config File
 - You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
-```
+```json
 {
 	"soil": [
 		{"id":"minecraft:grass_block", "weight": 90},
