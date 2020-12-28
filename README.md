@@ -20,13 +20,13 @@
 - The "Add Relief" button add the actual relief to the plot
 
 ### Tool Bar :
-	- Open File button to open a vaid txt plot save
-	- Export plot as a txt file or a litematic
-	- Undo button
-	- Redo button
-	- Add Relief button
-	- Reload Grid button
-	- Live Render button
+- Open File button to open a vaid txt plot save
+- Export plot as a txt file or a litematic
+- Undo button
+- Redo button
+- Add Relief button
+- Reload Grid button
+- Live Render button
 
 ### Shortcuts
 - Ctrl+O : Open File
