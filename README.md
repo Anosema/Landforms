@@ -18,7 +18,8 @@
 - The "Live Render" radio button will visualize the relief in real time, as you change it's settings. **IT CAN SLOW YOUR COMPUTER A LOT IF NOT POWERFUL ENOUGH**
 - The "Visualize" button show you the plot with the actual relief without adding it to the plot, you can change it's settings
 - The "Add Relief" button add the actual relief to the plot
-- Tool Bar :
+
+### Tool Bar :
 	- Open File button to open a vaid txt plot save
 	- Export plot as a txt file or a litematic
 	- Undo button
