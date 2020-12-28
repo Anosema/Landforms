@@ -354,7 +354,7 @@ class MainWindow(QMainWindow):
 			reg.setblock(x, y, z, block)
 			for j in range(y):
 				if data['isLayered']: block = choices(Stones, weights=StonesWeights, k=1)[0]
-				else: block = Layers[-(round(len(y)/j))]
+				else: block = Layers[(round(len(y)/j))]
 				reg.setblock(x, j, z, block)
 		schem.save(filename)
 		t1 = time()
