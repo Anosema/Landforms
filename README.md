@@ -46,7 +46,6 @@
 - You can export the plot as txt or as a litematic by clicking the floppy disk icon and choosing your option
 
 
----
 # Config File
 - You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
 ```json
@@ -73,14 +72,13 @@
 ```
 
 If `isLayered` is set to true the litematic will be in layer mode, otherwise it will be in landscape mode.
-
-Layer Mode :
+---
+## Layer Mode
 
 The list used to pick the blocks will be the `layer` one.
 The top layer, in our exampe, will be the red concrete, and the bottom layer will be the green concrete.
-
-
-Landscape Mode :
+---
+## Landscape Mode :
 
 The most top bock will be pick in the `soil` list, whie the other will be piced in the `underground` list.
 The weight attribute is the percentage of chance the block associated will be picked.
