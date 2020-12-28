@@ -10,6 +10,7 @@
 - [Config File](https://github.com/Anosema/Landforms#Config-File)
 	- [Layer Mode](https://github.com/Anosema/Landforms#Layer-Mode)
 	- [Landscape Mode](https://github.com/Anosema/Landforms#Landscape-Mode)
+---
 
 ## Prerequisite
 Make sure to have run `pip install -r requirements.txt` to install requiered modules
