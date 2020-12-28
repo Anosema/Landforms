@@ -1,11 +1,8 @@
-
 # Landforms Generator
 
----
 ## Prerequisite
-- Make sure to have run `pip install -r requirements.txt` to install requiered modules
+Make sure to have run `pip install -r requirements.txt` to install requiered modules
 
----
 ## Main Interface
 ### Grid Settings
 - Precision : Step between two consecutive values multiplied by 100 (ex : 100 means only one value will be calculated between 1 and 2). Lower the precision get, heavier get the calculs
@@ -40,14 +37,13 @@
 - Ctrl+R : Reload Grid
 - Ctrl+L : Live Render
 
----
 ## File Management
 - You can open a saved by clicking the file icon and choosing a previously saved plot as txt
 - You can export the plot as txt or as a litematic by clicking the floppy disk icon and choosing your option
 
 
 # Config File
-- You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
+You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following
 ```json
 {
 	"isLayered": true,
@@ -72,18 +68,15 @@
 ```
 
 If `isLayered` is set to true the litematic will be in layer mode, otherwise it will be in landscape mode.
----
-## Layer Mode
 
+## Layer Mode
 The list used to pick the blocks will be the `layer` one.
 The top layer, in our exampe, will be the red concrete, and the bottom layer will be the green concrete.
----
-## Landscape Mode :
 
+## Landscape Mode :
 The most top bock will be pick in the `soil` list, whie the other will be piced in the `underground` list.
 The weight attribute is the percentage of chance the block associated will be picked.
 The total weight of a list has to be == 100.
-
 
 
 You can freely change this config file as long as it's still in a JSON format.
