@@ -1,4 +1,6 @@
 from numpy import array, exp, arange, meshgrid
+from numpy import min as minima
+from numpy import max as maxima
 from os.path import expanduser
 from datetime import datetime
 from os import name, system
@@ -6,6 +8,9 @@ from random import choices
 from json import load
 from time import time
 from sys import argv
+
+
+
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -95,7 +100,8 @@ class MainWindow(QMainWindow):
 
 		self.sliderOffsetX = QSlider(self.frameReliefs)
 		self.sliderOffsetX.setOrientation(Qt.Horizontal)
-		self.sliderOffsetX.setRange(-self.sliderSize.value(), self.sliderSize.value())
+		self.sliderOffsetX.setRange(0, self.sliderSize.value())
+		self.sliderOffsetX.setValue(int(self.sliderSize.value()/2))
 		self.sliderOffsetX.setGeometry(45, 130, 120, 30)
 		self.sliderOffsetX.valueChanged.connect(self.ChangeOffsetX)
 
@@ -107,7 +113,8 @@ class MainWindow(QMainWindow):
 
 		self.sliderOffsetY = QSlider(self.frameReliefs)
 		self.sliderOffsetY.setOrientation(Qt.Horizontal)
-		self.sliderOffsetY.setRange(-self.sliderSize.value(), self.sliderSize.value())
+		self.sliderOffsetY.setRange(0, self.sliderSize.value())
+		self.sliderOffsetY.setValue(int(self.sliderSize.value()/2))
 		self.sliderOffsetY.setGeometry(45, 190, 120, 30)
 		self.sliderOffsetY.valueChanged.connect(self.ChangeOffsetY)
 
@@ -213,8 +220,8 @@ class MainWindow(QMainWindow):
 		self.labelTickPrecision.setText(str(self.sliderPrecision.value()))
 	def ChangeSize(self):
 		self.labelTickSize.setText(str(self.sliderSize.value()))
-		self.sliderOffsetX.setRange(-self.sliderSize.value(), self.sliderSize.value())
-		self.sliderOffsetY.setRange(-self.sliderSize.value(), self.sliderSize.value())
+		self.sliderOffsetX.setRange(0, self.sliderSize.value())
+		self.sliderOffsetY.setRange(0, self.sliderSize.value())
 	def ChangeHeight(self):
 		self.labelTickHeight.setText(str(self.sliderHeight.value()))
 		if self.radioButtonLive.isChecked(): self.visualizeRelief()
@@ -240,7 +247,7 @@ class MainWindow(QMainWindow):
 	def initGrid(self):
 		precision = self.sliderPrecision.value()/100
 		size      = self.sliderSize     .value()
-		Y = X = arange(-size, size+1, precision)
+		Y = X = arange(0, size+1, precision)
 		X, Y = meshgrid(X, Y)
 		Z = array([[0 for x in range(len(X))] for y in range(len(Y))])
 		self.grid = [X, Y, Z]
@@ -325,24 +332,18 @@ class MainWindow(QMainWindow):
 	def ExportLMT(self, filename):
 		if '.litematic' not in filename: filename += '.litematic'
 		gridList = []
-		maxi = 0
-		bzero = False
+		maxi, mini = maxima(self.grid[2]), minima(self.grid[2])
 
-		for i in self.grid[2]:
-			if i.any() < 0:
-				bzero = True
-				break
+		self.grid[2] -= mini
 
 		for i in range(len(self.grid[0])):
-			self.grid[0][i] += (len(self.grid[0][i]))/2
-			self.grid[1][i] += (len(self.grid[1][i]))/2
-			if bzero: self.grid[2][i] += (len(self.grid[2][i]))/2
+			# self.grid[0][i] += (len(self.grid[0][i]))/2
+			# self.grid[1][i] += (len(self.grid[1][i]))/2
 			for j in range(len(self.grid[0][i])):
 				x, z, y = self.grid[0][i][j], self.grid[1][i][j], self.grid[2][i][j]
-				if int(y) > maxi: maxi = int(y)
 				if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
 
-		schem = Schematic(len(self.grid[0]), (maxi+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
+		schem = Schematic(len(self.grid[0]), (int(maxi-mini)+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
 		reg = schem.regions["Main"]
 
 		with open('config.json', 'r') as file:
@@ -353,15 +354,19 @@ class MainWindow(QMainWindow):
 		Stones = [BlockState(x['id']) for x in data['underground']]
 		StonesWeights = tuple([x['weight'] for x in data['underground']])
 
-		Layers = [BlockState(x['id'] for x in data['layer'])]
+		Layers = [BlockState(x['id']) for x in data['layer']]
+
+
 
 		t0 = time()
 		for i in gridList:
-			x, z, y, block = i[0], i[1], i[2], choices(Soils, weights=SoilsWeights, k=1)[0]
+			x, z, y = i[0], i[1], i[2]
+			if data['isLayered']: block = Layers[int(y*((len(Layers)-1)/int(maxi-mini)))]
+			else: block = choices(Soils, weights=SoilsWeights, k=1)[0]
 			reg.setblock(x, y, z, block)
 			for j in range(y):
-				if data['isLayered']: block = choices(Stones, weights=StonesWeights, k=1)[0]
-				else: block = Layers[(round(len(y)/j))]
+				if data['isLayered']: block = Layers[int(j*((len(Layers)-1)/int(maxi-mini)))]
+				else: block = choices(Stones, weights=StonesWeights, k=1)[0]
 				reg.setblock(x, j, z, block)
 		schem.save(filename)
 		t1 = time()

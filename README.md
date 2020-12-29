@@ -10,6 +10,7 @@
 - [Config File](https://github.com/Anosema/Landforms#Config-File)
 	- [Layer Mode](https://github.com/Anosema/Landforms#Layer-Mode)
 	- [Landscape Mode](https://github.com/Anosema/Landforms#Landscape-Mode)
+- [Example](https://github.com/Anosema/Landforms[#Example])
 ---
 
 ## Prerequisite
@@ -68,10 +69,10 @@ You can choose which blocks will be used for the litematic file by editing the "
 		{"id":"minecraft:gravel", "weight": 5}
 	],
 	"layer": [
-		{"id":"minecraft:red_concrete"},
-		{"id":"minecraft:orange_concrete"},
+		{"id":"minecraft:green_concrete"},
 		{"id":"minecraft:blue_concrete"},
-		{"id":"minecraft:green_concrete"}
+		{"id":"minecraft:orange_concrete"},
+		{"id":"minecraft:red_concrete"}
 	]
 }
 ```
@@ -89,3 +90,16 @@ The total weight of a list has to be == 100.
 
 
 You can freely change this config file as long as it's still in a JSON format.
+
+## Example
+Everything you will see here is the example for [this](example/example.txt) file.
+Here is the result shown in the program :
+![plot image](example/example.png)
+
+Here is the result in-game in Non-Layered Mode :
+![Non Layered screen image](example/exampleNonLayered.png)
+
+Here is the result in-game in Layered Mode :
+![Layered screen image](example/exampleLayered.png)
+
+The litematics file are available [here](example/)
