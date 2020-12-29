@@ -11,6 +11,7 @@
 	- [Layer Mode](https://github.com/Anosema/Landforms#Layer-Mode)
 	- [Landscape Mode](https://github.com/Anosema/Landforms#Landscape-Mode)
 - [Example](https://github.com/Anosema/Landforms#Example)
+- [Example](#Example)
 ---
 
 ## Prerequisite
