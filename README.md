@@ -10,7 +10,7 @@
 - [Config File](https://github.com/Anosema/Landforms#Config-File)
 	- [Layer Mode](https://github.com/Anosema/Landforms#Layer-Mode)
 	- [Landscape Mode](https://github.com/Anosema/Landforms#Landscape-Mode)
-- [Example](https://github.com/Anosema/Landforms[#Example])
+- [Example](https://github.com/Anosema/Landforms#Example)
 ---
 
 ## Prerequisite
