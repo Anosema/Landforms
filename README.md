@@ -1,16 +1,15 @@
 # Landforms Generator
 
 ## Index
-- [Prerequisite](https://github.com/Anosema/Landforms#Prerequisite)
-- [Main Interface](https://github.com/Anosema/Landforms#Main-Interface)
-	- [Grid Settings](https://github.com/Anosema/Landforms#Grid-Settings)
-	- [Relief Settings](https://github.com/Anosema/Landforms#Relief-Settings)
-	- [Tool Bar](https://github.com/Anosema/Landforms#Tool-Bar)
-	- [Shortcuts](https://github.com/Anosema/Landforms#Shortcuts)
-- [Config File](https://github.com/Anosema/Landforms#Config-File)
-	- [Layer Mode](https://github.com/Anosema/Landforms#Layer-Mode)
-	- [Landscape Mode](https://github.com/Anosema/Landforms#Landscape-Mode)
-- [Example](https://github.com/Anosema/Landforms#Example)
+- [Prerequisite](#Prerequisite)
+- [Main Interface](#Main-Interface)
+	- [Grid Settings](#Grid-Settings)
+	- [Relief Settings](#Relief-Settings)
+	- [Tool Bar](#Tool-Bar)
+	- [Shortcuts](#Shortcuts)
+- [Config File](#Config-File)
+	- [Layer Mode](#Layer-Mode)
+	- [Landscape Mode](#Landscape-Mode)
 - [Example](#Example)
 ---
 
