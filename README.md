@@ -39,6 +39,7 @@ Make sure to have run `pip install -r requirements.txt` to install requiered mod
 - Add Relief button
 - Reload Grid button
 - Live Render button
+- Help button
 
 ### Shortcuts
 - Ctrl+O : Open File
@@ -48,6 +49,7 @@ Make sure to have run `pip install -r requirements.txt` to install requiered mod
 - Ctrl+A : Add Relief
 - Ctrl+R : Reload Grid
 - Ctrl+L : Live Render
+- Ctrl+H : Open Help
 
 ## Config File
 You can choose which blocks will be used for the litematic file by editing the "config.json" file. By default, the config is as following

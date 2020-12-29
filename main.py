@@ -1,6 +1,7 @@
-from numpy import array, exp, arrange, meshgrid
+from numpy import array, exp, arange, meshgrid
 from os.path import expanduser
 from datetime import datetime
+from os import name, system
 from random import choices
 from json import load
 from time import time
@@ -30,9 +31,6 @@ class MainWindow(QMainWindow):
 		self.setFixedHeight(630)
 
 		self.f = lambda self, Ox, Oy, H, q: array(H * exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
-
-
-
 
 	# Options
 		self.frameOptions = QFrame(self)
@@ -158,17 +156,18 @@ class MainWindow(QMainWindow):
 		self.toolb = QToolBar(self)
 		self.toolb.setGeometry(0, 0, 800, 30)
 
-		self.ActionOpen   = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon)     , 'Open plot', self)
-		self.ActionExport = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton), 'Export as txt', self)
-		self.ActionUndo   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowLeft)       , 'Undo', self)
-		self.ActionRedos   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowRight)      , 'Redo', self)
-		self.ActionAddR   = QAction('A' , self)
+		self.ActionOpen   = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon)     , 'Open plot (Ctrl+O)', self)
+		self.ActionExport = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton), 'Export as txt (Ctrl+E)', self)
+		self.ActionUndo   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowLeft)       , 'Undo (Ctrl+Z)', self)
+		self.ActionRedo   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowRight)      , 'Redo (Ctrl+Y)', self)
+		self.ActionAddR   = QAction('A', self)
 		self.ActionReload = QAction('R', self)
 		self.ActionLiveRd = QAction('L', self)
+		self.ActionHelp   = QAction(QApplication.style().standardIcon(QStyle.SP_DialogHelpButton), 'Help (Ctrl+H)', self)
 
-		self.ActionAddR  .setToolTip('Add Relief')
-		self.ActionReload.setToolTip('Reload Grid')
-		self.ActionLiveRd.setToolTip('Live Render')
+		self.ActionAddR  .setToolTip('Add Relief (Ctrl+A)')
+		self.ActionReload.setToolTip('Reload Grid (Ctrl+R)')
+		self.ActionLiveRd.setToolTip('Live Render (Ctrl+L)')
 
 		self.ActionOpen  .setShortcut('Ctrl+O')
 		self.ActionExport.setShortcut('Ctrl+E')
@@ -177,6 +176,7 @@ class MainWindow(QMainWindow):
 		self.ActionAddR  .setShortcut('Ctrl+A')
 		self.ActionReload.setShortcut('Ctrl+R')
 		self.ActionLiveRd.setShortcut('Ctrl+L')
+		self.ActionHelp  .setShortcut('Ctrl+H')
 
 		self.ActionOpen  .triggered.connect(self.openFile)
 		self.ActionExport.triggered.connect(self.saveFile)
@@ -185,6 +185,7 @@ class MainWindow(QMainWindow):
 		self.ActionAddR  .triggered.connect(self.addRelief)
 		self.ActionReload.triggered.connect(self.initGrid)
 		self.ActionLiveRd.triggered.connect(self.radioButtonLive.toggle)
+		self.ActionHelp  .triggered.connect(self.openHelp)
 
 		self.toolb.addAction(self.ActionOpen)
 		self.toolb.addAction(self.ActionExport)
@@ -195,12 +196,18 @@ class MainWindow(QMainWindow):
 		self.toolb.addAction(self.ActionAddR)
 		self.toolb.addAction(self.ActionReload)
 		self.toolb.addAction(self.ActionLiveRd)
+		self.toolb.addSeparator()
+		self.toolb.addAction(self.ActionHelp)
 
 		self.toolb.setFloatable(False), self.toolb.setMovable(False)
 
 	# Grid
 		self.reliefs, self.oldReliefs = [], []
 		self.initGrid()
+
+	def openHelp(self):
+		if name == 'posix': system('xdg-open https://github.com/Anosema/Landforms')
+		else: system('start https://github.com/Anosema/Landforms')
 
 	def ChangePrecision(self):
 		self.labelTickPrecision.setText(str(self.sliderPrecision.value()))
@@ -391,7 +398,7 @@ class MainWindow(QMainWindow):
 
 
 
-app = QApplication(sys.argv)
+app = QApplication(argv)
 app.setStyle('Fusion')
 
 window = MainWindow()
