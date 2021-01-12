@@ -7,6 +7,7 @@ from json import dump, loads
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from time import time
+from sys import argv
 
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
