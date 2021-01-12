@@ -295,7 +295,7 @@ class MainWindow(QMainWindow):
 				schem = Schematic(len(X), (int(maxi-mini)+1), len(X), name="ReliefGen", author="Anosema", description="Made with LandFormGenerator", main_region_name="Main")
 				reg = schem.regions["Main"]
 
-				try: with open('config.json', 'r') as file: data = load(file)
+				try: data = load(open('config.json', 'r'))
 				except: self.showError('config.json not found, see help on GitHub (Ctrl+H)', 'Error')
 				Soils = [BlockState(x['id']) for x in data['soil']]
 				SoilsWeights = tuple([x['weight'] for x in data['soil']])
