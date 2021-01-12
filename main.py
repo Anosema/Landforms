@@ -1,16 +1,12 @@
 from numpy import array, exp, arange, meshgrid
 from numpy import min as minima
 from numpy import max as maxima
-from os.path import expanduser
 from datetime import datetime
 from os import name, system
 from random import choices
 from json import load
 from time import time
 from sys import argv
-
-
-
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -337,8 +333,6 @@ class MainWindow(QMainWindow):
 		self.grid[2] -= mini
 
 		for i in range(len(self.grid[0])):
-			# self.grid[0][i] += (len(self.grid[0][i]))/2
-			# self.grid[1][i] += (len(self.grid[1][i]))/2
 			for j in range(len(self.grid[0][i])):
 				x, z, y = self.grid[0][i][j], self.grid[1][i][j], self.grid[2][i][j]
 				if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
@@ -399,9 +393,6 @@ class MainWindow(QMainWindow):
 		msg.setWindowTitle("Finished")
 		msg.show()
 		msg.exec_()
-
-
-
 
 app = QApplication(argv)
 app.setStyle('Fusion')
