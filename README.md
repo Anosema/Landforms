@@ -29,7 +29,7 @@ Make sure to have run `pip install -r requirements.txt` to install requiered mod
 ### Menu Bar
 #### File
 - "New" (Ctrl+N) : Allow you to create a new grid by choosing a side size. Your X and Y axes will be set according to this size. Between 1 and 1 000.
-- "Open File" (Ctrl+O) : Allow you to open a valid project (cf [Project Files](#Project-Files)) as JSON to load it.
+- "Open File" (Ctrl+O) : Allow you to open a valid project (cf [Project Files](#Project-File)) as JSON to load it.
 - "Save As..." (Ctrl+Shift+S) : Allow you to save a project as JSON and as a litematic according to your config file (cf [Config File](#Config-File))
 
 #### Edit
