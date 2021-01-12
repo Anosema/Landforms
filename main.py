@@ -1,403 +1,402 @@
-from numpy import array, exp, arange, meshgrid
-from numpy import min as minima
+from numpy import meshgrid, arange, array, exp
 from numpy import max as maxima
-from datetime import datetime
-from os import name, system
+from numpy import min as minima
+from os import name, system, getcwd
+from PyQt5.QtWidgets import *
+from json import dump, loads
 from random import choices
-from json import load
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from time import time
 from sys import argv
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas 
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar 
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-
-from mpl_toolkits.mplot3d import axes3d
 
 from litemapy import Schematic, Region, BlockState
 
 
 
+
+
+class Peak():
+	def __init__(self, Ox, Oy, Oz, H, Q, X, Y):
+		X, Y = meshgrid(X, Y)
+		self.dict = {"OffsetX": Ox, "OffsetY": Oy, "OffsetZ": Oz, "Height": H, "q": Q}
+		self.points = array((H * exp(-((X - Ox)**2 + (Y - Oy)**2) / Q)) + Oz)
+
+class NewGridWindow(QDialog):
+	def __init__(self, parent):
+		super(NewGridWindow, self).__init__(parent)
+		self.setWindowFlags(Qt.Drawer)
+		self.setFixedWidth(300)
+		self.setFixedHeight(110)
+		self.setWindowTitle("New Grid")
+
+		self.parent = parent
+
+		self.label = QLabel('Grid Size :', self)
+		self.label.setGeometry(5, 5, 140, 30)
+		self.spin = QSpinBox(self)
+		self.spin.setGeometry(155, 5, 140, 30)
+		self.spin.setRange(1, 1000)
+		self.spin.setValue(self.parent.totalPeaks["SideSize"])
+
+		self.buttonValid = QPushButton('Create', self)
+		self.buttonValid.setGeometry(5, 75, 290, 30)
+		self.buttonValid.clicked.connect(self.ask)
+
+
+	def actuallyShow(self):
+		self.setWindowModality(Qt.ApplicationModal)
+		self.setFocusPolicy(Qt.StrongFocus)
+		self.activateWindow()
+		self.setFocus(True)
+		self.raise_()
+		self.show()
+
+	def ask(self):
+		buttonReply = QMessageBox.question(self, 'Are you sure ?', 'Any unsaved changes will be destroyed', QMessageBox.Yes | QMessageBox.Cancel, QMessageBox.Cancel)
+		if buttonReply == QMessageBox.Yes:
+			self.parent.initGrid(size = self.spin.value())
+			self.hide()
+
+
 class MainWindow(QMainWindow):
 	def __init__(self):
 		super().__init__()
+
 		self.setWindowTitle('Landform Generator')
-		self.setFixedWidth (800)
-		self.setFixedHeight(630)
+		self.setFixedWidth(800)
+		self.setFixedHeight(622)
 
-		self.f = lambda self, Ox, Oy, H, q: array(H * exp(-((self.grid[0] - Ox)**2 + (self.grid[1] - Oy)**2) / q))
 
-	# Options
-		self.frameOptions = QFrame(self)
-		self.frameOptions.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameOptions.setGeometry(0, 30, 200, 225)
-		self.labelTitleOptions = QLabel('Change Grid Config', self.frameOptions)
-		self.labelTitleOptions.setGeometry(5, 5, 190, 30)
-		self.labelTitleOptions.setAlignment(Qt.AlignCenter)
-		self.labelTitleOptions.setFont(QFont('Arial', 14))
-	# Precision
-		self.labelTitlePrecision = QLabel('Precision', self.frameOptions)
-		self.labelTitlePrecision.setGeometry(15, 40, 150, 30)
-		self.sliderPrecision = QSlider(self.frameOptions)
-		self.sliderPrecision.setOrientation(Qt.Horizontal)
-		self.sliderPrecision.setRange(1, 250)
-		self.sliderPrecision.setValue(100)
-		self.sliderPrecision.setGeometry(45, 70, 120, 30)
-		self.sliderPrecision.valueChanged.connect(self.ChangePrecision)
-		self.labelTickPrecision = QLabel(str(self.sliderPrecision.value()), self.frameOptions)
-		self.labelTickPrecision.setGeometry(15, 60, 25, 30)
-	# Size
-		self.labelTitleSize = QLabel('Size', self.frameOptions)
-		self.labelTitleSize.setGeometry(15, 100, 150, 30)
-		self.sliderSize = QSlider(self.frameOptions)
-		self.sliderSize.setOrientation(Qt.Horizontal)
-		self.sliderSize.setRange(1, 250)
-		self.sliderSize.setValue(5)
-		self.sliderSize.setGeometry(45, 130, 120, 30)
-		self.sliderSize.valueChanged.connect(self.ChangeSize)
-		self.labelTickSize = QLabel(str(self.sliderSize.value()), self.frameOptions)
-		self.labelTickSize.setGeometry(15, 120, 25, 30)
-	# Reload
-		self.buttonResetGrid = QPushButton('Reset Grid', self.frameOptions)
-		self.buttonResetGrid.clicked.connect(self.resetGrid)
-		self.buttonResetGrid.setGeometry(5, 160, 190, 30)
+		self.system = 0 if name == 'posix' else 1 
 
-		self.buttonReloadGrid = QPushButton('Reload Grid', self.frameOptions)
-		self.buttonReloadGrid.clicked.connect(self.initGrid)
-		self.buttonReloadGrid.setGeometry(5, 190, 190, 30)
+		self.oldReliefs = []
 
-	# Reliefs
-		self.frameReliefs = QFrame(self)
-		self.frameReliefs.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameReliefs.setGeometry(0, 255, 200, 375)
-		self.labelTitleReliefs = QLabel('Add New Relief', self.frameReliefs)
-		self.labelTitleReliefs.setGeometry(5, 5, 190, 30)
-		self.labelTitleReliefs.setAlignment(Qt.AlignCenter)
-		self.labelTitleReliefs.setFont(QFont('Arial', 14))
-	# Height
-		self.labelTitleHeight = QLabel('Height', self.frameReliefs)
-		self.labelTitleHeight.setGeometry(15, 40, 150, 30)
-		self.sliderHeight = QSlider(self.frameReliefs)
-		self.sliderHeight.setOrientation(Qt.Horizontal)
-		self.sliderHeight.setRange(-250, 250)
-		self.sliderHeight.setGeometry(45, 70, 120, 30)
-		self.sliderHeight.valueChanged.connect(self.ChangeHeight)
-		self.labelTickHeight = QLabel(str(self.sliderHeight.value()), self.frameReliefs)
-		self.labelTickHeight.setGeometry(15, 60, 25, 30)
-	# OffsetX
-		self.labelTitleOffsetX = QLabel('OffsetX', self.frameReliefs)
-		self.labelTitleOffsetX.setGeometry(15, 100, 150, 30)
+		self.totalPeaks = {}
+		self.totalPeaks["SideSize"] = 5
+		self.totalPeaks["Peaks"] = []
 
-		self.sliderOffsetX = QSlider(self.frameReliefs)
-		self.sliderOffsetX.setOrientation(Qt.Horizontal)
-		self.sliderOffsetX.setRange(0, self.sliderSize.value())
-		self.sliderOffsetX.setValue(int(self.sliderSize.value()/2))
-		self.sliderOffsetX.setGeometry(45, 130, 120, 30)
-		self.sliderOffsetX.valueChanged.connect(self.ChangeOffsetX)
+	# UI
 
-		self.labelTickOffsetX = QLabel(str(self.sliderOffsetX.value()), self.frameReliefs)
-		self.labelTickOffsetX.setGeometry(15, 120, 25, 30)
-	# OffsetY
-		self.labelTitleOffsetY = QLabel('OffsetY', self.frameReliefs)
-		self.labelTitleOffsetY.setGeometry(15, 160, 150, 30)
+		self.gridWindow = NewGridWindow(self)
 
-		self.sliderOffsetY = QSlider(self.frameReliefs)
-		self.sliderOffsetY.setOrientation(Qt.Horizontal)
-		self.sliderOffsetY.setRange(0, self.sliderSize.value())
-		self.sliderOffsetY.setValue(int(self.sliderSize.value()/2))
-		self.sliderOffsetY.setGeometry(45, 190, 120, 30)
-		self.sliderOffsetY.valueChanged.connect(self.ChangeOffsetY)
-
-		self.labelTickOffsetY = QLabel(str(self.sliderOffsetY.value()), self.frameReliefs)
-		self.labelTickOffsetY.setGeometry(15, 180, 25, 30)
-	# Q
-		self.labelTitleQ = QLabel('Q', self.frameReliefs)
-		self.labelTitleQ.setGeometry(15, 220, 150, 30)
-
-		self.sliderQ = QSlider(self.frameReliefs)
-		self.sliderQ.setOrientation(Qt.Horizontal)
-		self.sliderQ.setRange(-500, 500)
-		self.sliderQ.setValue(5)
-		self.sliderQ.setGeometry(45, 250, 120, 30)
-		self.sliderQ.valueChanged.connect(self.ChangeQ)
-
-		self.labelTickQ = QLabel(str(self.sliderQ.value()), self.frameReliefs)
-		self.labelTickQ.setGeometry(15, 240, 25, 30)
-	# Visualize & Add
-		self.radioButtonLive = QRadioButton('Live Render', self.frameReliefs)
-		self.radioButtonLive.setGeometry(5, 280, 190, 30)
-
-		self.buttonVisRelief = QPushButton('Visualize', self.frameReliefs)
-		self.buttonVisRelief.clicked.connect(self.visualizeRelief)
-		self.buttonVisRelief.setGeometry(5, 310, 190, 30)
-
-		self.buttonAddRelief = QPushButton('Add Relief', self.frameReliefs)
-		self.buttonAddRelief.clicked.connect(self.addRelief)
-		self.buttonAddRelief.setGeometry(5, 340, 190, 30)
-
-	# Graph
-		self.frameGraph = QFrame(self)
+		self.centralwidget = QWidget(self)
+		self.frameGraph = QFrame(self.centralwidget)
+		self.frameGraph.setGeometry(200, 0, 600, 600)
 		self.frameGraph.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
-		self.frameGraph.setGeometry(200, 30, 600, 600)
+
+		self.widgetGraph = QWidget(self.frameGraph)
+		self.widgetGraph.setGeometry(0, 0, 600, 600)
+
 		self.figure = plt.figure()
+		self.ax = self.figure.gca(projection='3d')
 		self.figure.patch.set_facecolor('#F0F0F0')
 		self.canvas  = FigureCanvas(self.figure)
-		self.toolbar = NavigationToolbar(self.canvas, self.frameGraph)
-		self.wid     = QWidget(self.frameGraph)
+		# self.toolbar = NavigationToolbar(self.canvas, self.frameGraph)
 		self.layout  = QVBoxLayout()
-		self.layout.addWidget(self.toolbar) 
-		self.layout.addWidget(self.canvas) 
-		self.wid.setLayout(self.layout)
+		# self.layout.addWidget(self.toolbar)
+		self.layout.addWidget(self.canvas)
+		self.widgetGraph.setLayout(self.layout)
 
-	# Menu
-		self.toolb = QToolBar(self)
-		self.toolb.setGeometry(0, 0, 800, 30)
+		self.ax.set_xlabel('X')
+		self.ax.set_ylabel('Y')
+		self.ax.set_zlabel('Z')
+		self.ax.patch.set_facecolor('#F0F0F0')
 
-		self.ActionOpen   = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon)     , 'Open plot (Ctrl+O)', self)
-		self.ActionExport = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton), 'Export as txt (Ctrl+E)', self)
-		self.ActionUndo   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowLeft)       , 'Undo (Ctrl+Z)', self)
-		self.ActionRedo   = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowRight)      , 'Redo (Ctrl+Y)', self)
-		self.ActionAddR   = QAction('A', self)
-		self.ActionReload = QAction('R', self)
-		self.ActionLiveRd = QAction('L', self)
-		self.ActionHelp   = QAction(QApplication.style().standardIcon(QStyle.SP_DialogHelpButton), 'Help (Ctrl+H)', self)
 
-		self.ActionAddR  .setToolTip('Add Relief (Ctrl+A)')
-		self.ActionReload.setToolTip('Reload Grid (Ctrl+R)')
-		self.ActionLiveRd.setToolTip('Live Render (Ctrl+L)')
 
-		self.ActionOpen  .setShortcut('Ctrl+O')
-		self.ActionExport.setShortcut('Ctrl+E')
-		self.ActionUndo  .setShortcut('Ctrl+Z')
-		self.ActionRedo  .setShortcut('Ctrl+Y')
-		self.ActionAddR  .setShortcut('Ctrl+A')
-		self.ActionReload.setShortcut('Ctrl+R')
-		self.ActionLiveRd.setShortcut('Ctrl+L')
-		self.ActionHelp  .setShortcut('Ctrl+H')
 
-		self.ActionOpen  .triggered.connect(self.openFile)
-		self.ActionExport.triggered.connect(self.saveFile)
-		self.ActionUndo  .triggered.connect(self.undo)
-		self.ActionRedo  .triggered.connect(self.redo)
-		self.ActionAddR  .triggered.connect(self.addRelief)
-		self.ActionReload.triggered.connect(self.initGrid)
-		self.ActionLiveRd.triggered.connect(self.radioButtonLive.toggle)
-		self.ActionHelp  .triggered.connect(self.openHelp)
+		self.frameOption = QFrame(self.centralwidget)
+		self.frameOption.setGeometry(0, 0, 200, 600)
+		self.frameOption.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
 
-		self.toolb.addAction(self.ActionOpen)
-		self.toolb.addAction(self.ActionExport)
-		self.toolb.addSeparator()
-		self.toolb.addAction(self.ActionUndo)
-		self.toolb.addAction(self.ActionRedo)
-		self.toolb.addSeparator()
-		self.toolb.addAction(self.ActionAddR)
-		self.toolb.addAction(self.ActionReload)
-		self.toolb.addAction(self.ActionLiveRd)
-		self.toolb.addSeparator()
-		self.toolb.addAction(self.ActionHelp)
 
-		self.toolb.setFloatable(False), self.toolb.setMovable(False)
+		self.spinOffsetX = QSpinBox(self.frameOption)
+		self.spinOffsetX.setGeometry(5, 30, 150, 20)
+		self.spinOffsetX.setMaximum(100)
+		self.labelTitleOffsetX = QLabel("Offset X", self.frameOption)
+		self.labelTitleOffsetX.setGeometry(5, 5, 190, 25)
+		self.labelTitleOffsetX.setAlignment(Qt.AlignCenter)
+		self.labelMaxOffsetX = QLabel("100", self.frameOption)
+		self.labelMaxOffsetX.setGeometry(160, 30, 35, 20)
+		self.labelMaxOffsetX.setAlignment(Qt.AlignCenter)
 
-	# Grid
-		self.reliefs, self.oldReliefs = [], []
-		self.initGrid()
+		self.labelTitleOffsetY = QLabel("Offset Y", self.frameOption)
+		self.labelTitleOffsetY.setGeometry(5, 55, 190, 25)
+		self.labelTitleOffsetY.setAlignment(Qt.AlignCenter)
+		self.labelMaxOffsetY = QLabel("100", self.frameOption)
+		self.labelMaxOffsetY.setGeometry(160, 80, 35, 20)
+		self.labelMaxOffsetY.setAlignment(Qt.AlignCenter)
+		self.spinOffsetY = QSpinBox(self.frameOption)
+		self.spinOffsetY.setGeometry(5, 80, 150, 20)
+		self.spinOffsetY.setMaximum(100)
 
-	def openHelp(self):
-		if name == 'posix': system('xdg-open https://github.com/Anosema/Landforms')
-		else: system('start https://github.com/Anosema/Landforms')
+		self.labelTitleOffsetZ = QLabel("Offset Z", self.frameOption)
+		self.labelTitleOffsetZ.setGeometry(5, 105, 190, 25)
+		self.labelTitleOffsetZ.setAlignment(Qt.AlignCenter)
+		self.labelMaxOffsetZ = QLabel("250", self.frameOption)
+		self.labelMaxOffsetZ.setGeometry(160, 130, 35, 20)
+		self.labelMaxOffsetZ.setAlignment(Qt.AlignCenter)
+		self.spinOffsetZ = QSpinBox(self.frameOption)
+		self.spinOffsetZ.setGeometry(5, 130, 150, 20)
+		self.spinOffsetZ.setRange(-250, 250)
 
-	def ChangePrecision(self):
-		self.labelTickPrecision.setText(str(self.sliderPrecision.value()))
-	def ChangeSize(self):
-		self.labelTickSize.setText(str(self.sliderSize.value()))
-		self.sliderOffsetX.setRange(0, self.sliderSize.value())
-		self.sliderOffsetY.setRange(0, self.sliderSize.value())
-	def ChangeHeight(self):
-		self.labelTickHeight.setText(str(self.sliderHeight.value()))
-		if self.radioButtonLive.isChecked(): self.visualizeRelief()
-	def ChangeOffsetX(self):
-		self.labelTickOffsetX.setText(str(self.sliderOffsetX.value()))
-		if self.radioButtonLive.isChecked(): self.visualizeRelief()
-	def ChangeOffsetY(self):
-		self.labelTickOffsetY.setText(str(self.sliderOffsetY.value()))
-		if self.radioButtonLive.isChecked(): self.visualizeRelief()
-	def ChangeQ(self):
-		self.labelTickQ.setText(str(self.sliderQ.value()))
-		if self.radioButtonLive.isChecked(): self.visualizeRelief()
+		self.labelTitleHeight = QLabel("Height", self.frameOption)
+		self.labelTitleHeight.setGeometry(5, 155, 190, 25)
+		self.labelTitleHeight.setAlignment(Qt.AlignCenter)
+		self.labelMaxHeight = QLabel("250", self.frameOption)
+		self.labelMaxHeight.setGeometry(160, 180, 35, 20)
+		self.labelMaxHeight.setAlignment(Qt.AlignCenter)
+		self.spinHeight = QSpinBox(self.frameOption)
+		self.spinHeight.setGeometry(5, 180, 150, 20)
+		self.spinHeight.setRange(-250, 250)
 
-	def resetGrid(self):
-		self.reliefs = []
-		self.initGrid()
+		self.labelTitleQ = QLabel("Q", self.frameOption)
+		self.labelTitleQ.setGeometry(5, 205, 190, 25)
+		self.labelTitleQ.setAlignment(Qt.AlignCenter)
+		self.labelMaxQ = QLabel("50000", self.frameOption)
+		self.labelMaxQ.setGeometry(160, 230, 35, 20)
+		self.labelMaxQ.setAlignment(Qt.AlignCenter)
+		self.spinQ = QSpinBox(self.frameOption)
+		self.spinQ.setGeometry(5, 230, 150, 20)
+		self.spinQ.setRange(1, 50000)
 
-	def undo(self):
-		if self.reliefs != []: self.oldReliefs.append(self.reliefs.pop()), self.initGrid()
-	def redo(self):
-		if self.oldReliefs != []: self.reliefs.append(self.oldReliefs.pop()), self.initGrid()
+		self.line = QFrame(self.frameOption)
+		self.line.setGeometry(5, 255, 190, 5)
+		self.line.setFrameShape(QFrame.HLine)
+		self.line.setFrameShadow(QFrame.Sunken)
+		self.buttonVisualize = QPushButton("Visualize Relief", self.frameOption)
+		self.buttonVisualize.setGeometry(5, 265, 190, 25)
+		self.buttonVisualize.clicked.connect(self.showGrid)
 
-	def initGrid(self):
-		precision = self.sliderPrecision.value()/100
-		size      = self.sliderSize     .value()
-		Y = X = arange(0, size+1, precision)
-		X, Y = meshgrid(X, Y)
-		Z = array([[0 for x in range(len(X))] for y in range(len(Y))])
-		self.grid = [X, Y, Z]
-		for i in self.reliefs: self.grid[2] = self.grid[2] + self.f(self, i[0], i[1], i[2], i[3])
-		self.showGrid(self.grid)
-	def visualizeRelief(self):
-		offsetX = self.sliderOffsetX.value()
-		offsetY = self.sliderOffsetY.value()
-		height  = self.sliderHeight .value()
-		Q       = self.sliderQ      .value()
-		if Q != 0:
-			self.z = self.grid[2] + self.f(self, offsetX, offsetY, height, Q)
-			self.showGrid((self.grid[0], self.grid[1], self.z))
-	def addRelief(self):
-		offsetX = self.sliderOffsetX.value()
-		offsetY = self.sliderOffsetY.value()
-		height  = self.sliderHeight .value()
-		Q       = self.sliderQ      .value()
-		if Q != 0:
-			self.reliefs.append((offsetX, offsetY, height, Q))
-			self.z = self.grid[2] + self.f(self, offsetX, offsetY, height, Q)
-			self.grid = [self.grid[0], self.grid[1], self.z]
-			self.showGrid(self.grid)
-	def showGrid(self, cells):
-		X, Y, Z = cells[0], cells[1], cells[2]
+		self.buttonAddRelief = QPushButton("Add Relief", self.frameOption)
+		self.buttonAddRelief.setGeometry(6, 295, 190, 25)
+		self.buttonAddRelief.clicked.connect(lambda: self.showGrid(True))
+
+		self.setCentralWidget(self.centralwidget)
+		self.menubar = QMenuBar(self)
+		self.menubar.setGeometry(0, 0, 800, 21)
+		self.menuFile = QMenu("File", self.menubar)
+		self.menuConfig = QMenu("Preferences", self.menubar)
+		self.menuEdit = QMenu("Edit", self.menubar)
+		self.setMenuBar(self.menubar)
+
+		self.actionNew = QAction(QApplication.style().standardIcon(QStyle.SP_FileIcon), "New", self)
+		self.actionNew.triggered.connect(self.newGrid)
+		self.actionNew.setShortcut('Ctrl+N')
+
+		self.actionOpenFile = QAction(QApplication.style().standardIcon(QStyle.SP_DirOpenIcon), "Open File", self)
+		self.actionOpenFile.triggered.connect(self.openFile)
+		self.actionOpenFile.setShortcut('Ctrl+O')
+
+		self.actionSaveAs = QAction(QApplication.style().standardIcon(QStyle.SP_DialogSaveButton),"Save As...", self)
+		self.actionSaveAs.triggered.connect(self.saveFile)
+		self.actionSaveAs.setShortcut('Ctrl+Shift+S')
+
+		self.actionEditLitematicConfig = QAction("Edit Litematic Settings", self)
+		self.actionEditLitematicConfig.triggered.connect(self.openConfig)
+
+		self.actionUndo = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowLeft), "Undo", self)
+		self.actionUndo.triggered.connect(self.undo)
+		self.actionUndo.setShortcut('Ctrl+Z')
+
+		self.actionRedo = QAction(QApplication.style().standardIcon(QStyle.SP_ArrowRight), "Redo", self)
+		self.actionRedo.triggered.connect(self.redo)
+		self.actionRedo.setShortcut('Ctrl+Y')
+
+		self.actionLiveRender = QAction("Live Render", self)
+		self.actionLiveRender.triggered.connect(self.toggleLive)
+		self.actionLiveRender.setShortcut('Ctrl+L')
+		self.actionLiveRender.setCheckable(True)
+
+		self.actionHelp = QAction(QApplication.style().standardIcon(QStyle.SP_DialogHelpButton), 'Help', self)
+		self.actionHelp.triggered.connect(self.openHelp)
+		self.actionHelp.setShortcut('Ctrl+H')
+		self.actionHelp.setMenuRole(QAction.AboutRole)
+
+
+
+		self.menuFile.addAction(self.actionNew)
+		self.menuFile.addAction(self.actionOpenFile)
+		self.menuFile.addSeparator()
+		self.menuFile.addAction(self.actionSaveAs)
+		self.menuEdit.addAction(self.actionUndo)
+		self.menuEdit.addAction(self.actionRedo)
+		self.menuConfig.addAction(self.actionEditLitematicConfig)
+		self.menuConfig.addAction(self.actionLiveRender)
+		self.menuConfig.addAction(self.actionHelp)
+		self.menubar.addAction(self.menuFile.menuAction())
+		self.menubar.addAction(self.menuEdit.menuAction())
+		self.menubar.addAction(self.menuConfig.menuAction())
+
+
+		self.updateRange()
+
+
+	def newGrid(self):
+		self.gridWindow.actuallyShow()
+
+	def initGrid(self, size=None, opened=False):
+		if opened:
+			while type(self.totalPeaks['Peaks'][0]) is dict:
+				peak = self.totalPeaks['Peaks'].pop(0)
+				self.totalPeaks['Peaks'].append(Peak(peak["OffsetX"], peak["OffsetY"], peak["OffsetZ"], peak["Height"], peak["q"], arange(self.totalPeaks['SideSize']), arange(self.totalPeaks['SideSize'])))
+		else:
+			self.totalPeaks['SideSize'] = size
+			self.totalPeaks['Peaks'] = []
+
+
+		self.updateRange()
+		self.showGrid()
+
+	def showGrid(self, toAdd = False, do = True):
+
+		elev, azim = self.ax.elev, self.ax.azim
+		X, Y = meshgrid(arange(self.totalPeaks['SideSize']), arange(self.totalPeaks['SideSize']))
+		Z = array([[0.0 for x in range(len(X))] for y in range(len(Y))])
+		if do and self.spinQ.value() != 0:
+
+			if toAdd: self.totalPeaks["Peaks"].append(Peak(self.spinOffsetX.value(), self.spinOffsetY.value(), self.spinOffsetZ.value(), self.spinHeight.value(), self.spinQ.value(), arange(self.totalPeaks['SideSize']), arange(self.totalPeaks['SideSize'])))
+			else: Z += Peak(self.spinOffsetX.value(), self.spinOffsetY.value(), self.spinOffsetZ.value(), self.spinHeight.value(), self.spinQ.value(), arange(self.totalPeaks['SideSize']), arange(self.totalPeaks['SideSize'])).points
+
+		for peak in self.totalPeaks['Peaks']:
+			Z += peak.points
 
 		self.figure.clear()
-		ax = self.figure.gca(projection='3d')
-		ax.plot_surface(X, Y, Z, cmap = cm.coolwarm)
-		ax.set_xlabel('X')
-		ax.set_ylabel('Y')
-		ax.set_zlabel('Z')
-		ax.patch.set_facecolor('#F0F0F0')
+		self.ax = self.figure.gca(projection='3d')
+		self.ax.set_xlabel('X')
+		self.ax.set_ylabel('Y')
+		self.ax.set_zlabel('Z')
+		self.ax.patch.set_facecolor('#F0F0F0')
+		self.ax.plot_surface(X, Y, Z, cmap = cm.coolwarm)
+		self.ax.view_init(elev = elev, azim=azim)
 		self.canvas.draw()
+
 	def openFile(self):
-		filename = QFileDialog.getOpenFileName(self,"Load Archives","","Txt Files (*.txt)")[0]
+		filename = QFileDialog.getOpenFileName(self,"Load Archives","","JSON Files (*.json)")[0]
 		if filename:
-			with open(filename, 'r') as file:
-				content = file.readlines()
-			Xline, Yline, Zline, Rline = content[0], content[1], content[2], content[3]
-			tmp1 = []
-			for x in Xline.split('|'):
-				tmp2 = []
-				for j in x.split(', '):
-					tmp2.append(float(j))
-				tmp1.append(tmp2)
-			Xlist = array(tmp1)
+			with open(filename, 'r') as file: self.totalPeaks = loads(file.read())
+			self.initGrid(opened=True)
 
-			tmp1 = []
-			for y in Yline.split('|'):
-				tmp2 = []
-				for j in y.split(', '):
-					tmp2.append(float(j))
-				tmp1.append(tmp2)
-			Ylist = array(tmp1)
-
-			tmp1 = []
-			for z in Zline.split('|'):
-				tmp2 = []
-				for j in z.split(', '):
-					tmp2.append(float(j))
-				tmp1.append(tmp2)
-			Zlist = array(tmp1)
-
-			tmp1 = []
-			for r in Rline.split('|'):
-				tmp2 = []
-				for j in r.split(', '):
-					tmp2.append(float(j))
-				tmp1.append(tuple(tmp2))
-			self.reliefs = tmp1
-
-			self.sliderSize.setValue(int(len(Xlist)/2))
-			self.ChangeSize()
-			self.grid = [Xlist, Ylist, Zlist]
-			self.showGrid(self.grid)
 	def saveFile(self):
-		filename = QFileDialog.getSaveFileName(self,"Save Schematic","","Litematic Files (*.litematic);;Txt Files (*.txt)")
-		if filename[0]:
-			if '.litematic' in filename[1]: self.ExportLMT(filename[0])
-			else: self.ExportTXT(filename[0])
-	def ExportLMT(self, filename):
-		if '.litematic' not in filename: filename += '.litematic'
-		gridList = []
-		maxi, mini = maxima(self.grid[2]), minima(self.grid[2])
+		filename = QFileDialog.getSaveFileName(self, 'Save Schematic', '', 'JSON File (*.json);;Litematic File (*.litematic)')[0]
+		if filename:
+			if '.litematic' in filename:
+				gridList = []
+				X, Y = meshgrid(arange(self.totalPeaks['SideSize']), arange(self.totalPeaks['SideSize']))
+				Z = array([[0.0 for x in range(len(X))] for y in range(len(Y))])
+				for peak in self.totalPeaks['Peaks']:
+					Z += peak.points
 
-		self.grid[2] -= mini
+				mini, maxi = minima(Z), maxima(Z)
 
-		for i in range(len(self.grid[0])):
-			for j in range(len(self.grid[0][i])):
-				x, z, y = self.grid[0][i][j], self.grid[1][i][j], self.grid[2][i][j]
-				if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
+				for i in range(len(X)):
+					for j in range(len(Y)):
+						x, z, y = X[i][j], Y[i][j], Z[i][j]
+						if (x, z, y) not in gridList: gridList.append([int(x), int(z), int(y)])
+		
+				schem = Schematic(len(X), (int(maxi-mini)+1), len(X), name="ReliefGen", author="Anosema", description="Made with LandFormGenerator", main_region_name="Main")
+				reg = schem.regions["Main"]
 
-		schem = Schematic(len(self.grid[0]), (int(maxi-mini)+1), len(self.grid[0]), name="ReliefGen", author="Anosema", description="Made with ReliefGenerator", main_region_name="Main")
-		reg = schem.regions["Main"]
+				try: data = loads(open('config.json', 'r').read())
+				except Exception as e: self.showError(f'{e}, see help on GitHub (Ctrl+H)', 'Error')
+				Soils = [BlockState(x['id']) for x in data['soil']]
+				SoilsWeights = tuple([x['weight'] for x in data['soil']])
 
-		with open('config.json', 'r') as file:
-			data = load(file)
-		Soils = [BlockState(x['id']) for x in data['soil']]
-		SoilsWeights = tuple([x['weight'] for x in data['soil']])
+				Stones = [BlockState(x['id']) for x in data['underground']]
+				StonesWeights = tuple([x['weight'] for x in data['underground']])
 
-		Stones = [BlockState(x['id']) for x in data['underground']]
-		StonesWeights = tuple([x['weight'] for x in data['underground']])
-
-		Layers = [BlockState(x['id']) for x in data['layer']]
+				Layers = [BlockState(x['id']) for x in data['layer']]
 
 
 
-		t0 = time()
-		for i in gridList:
-			x, z, y = i[0], i[1], i[2]
-			if data['isLayered']: block = Layers[int(y*((len(Layers)-1)/int(maxi-mini)))]
-			else: block = choices(Soils, weights=SoilsWeights, k=1)[0]
-			reg.setblock(x, y, z, block)
-			for j in range(y):
-				if data['isLayered']: block = Layers[int(j*((len(Layers)-1)/int(maxi-mini)))]
-				else: block = choices(Stones, weights=StonesWeights, k=1)[0]
-				reg.setblock(x, j, z, block)
-		schem.save(filename)
-		t1 = time()
-		process_time = t1-t0
+				t0 = time()
+				for i in gridList:
+					x, z, y = i[0], i[1], i[2]
+					if data['isLayered']: block = Layers[int(y*((len(Layers)-1)/int(maxi-mini)))]
+					else: block = choices(Soils, weights=SoilsWeights, k=1)[0]
+					reg.setblock(x, y, z, block)
+					for j in range(y):
+						if data['isLayered']: block = Layers[int(j*((len(Layers)-1)/int(maxi-mini)))]
+						else: block = choices(Stones, weights=StonesWeights, k=1)[0]
+						reg.setblock(x, j, z, block)
+				schem.save(filename)
+				t1 = time()
+				process_time = t1-t0
+
+				self.showError(f'Your Litematic is Finished (Done in {str(int(process_time*10)/10)}s', 'Finished')
+			else:
+				data = {}
+				data = {"SideSize": self.totalPeaks["SideSize"]}
+				data['Peaks'] = []
+				for i in self.totalPeaks['Peaks']:
+					data['Peaks'].append(i.dict)
+				with open(filename, 'w') as file: dump(data, file, indent=4)
+
+	def updateRange(self):
+		self.spinOffsetX.setRange(0, self.totalPeaks['SideSize'])
+		self.spinOffsetY.setRange(0, self.totalPeaks['SideSize'])
+		self.spinOffsetX.setValue(int(self.totalPeaks['SideSize']/2))
+		self.spinOffsetY.setValue(int(self.totalPeaks['SideSize']/2))
+		self.labelMaxOffsetX.setText(str(self.totalPeaks['SideSize']))
+		self.labelMaxOffsetY.setText(str(self.totalPeaks['SideSize']))
+
+	def toggleLive(self):
+		if self.actionLiveRender.isChecked():
+			self.spinOffsetX.valueChanged.connect(lambda: self.showGrid(False))
+			self.spinOffsetY.valueChanged.connect(lambda: self.showGrid(False))
+			self.spinOffsetZ.valueChanged.connect(lambda: self.showGrid(False))
+			self.spinHeight .valueChanged.connect(lambda: self.showGrid(False))
+			self.spinQ      .valueChanged.connect(lambda: self.showGrid(False))
+		else:
+			self.spinOffsetX.valueChanged.disconnect()
+			self.spinOffsetY.valueChanged.disconnect()
+			self.spinOffsetZ.valueChanged.disconnect()
+			self.spinHeight .valueChanged.disconnect()
+			self.spinQ      .valueChanged.disconnect()
+
+	def undo(self):
+		if self.totalPeaks['Peaks'] != []:
+			self.oldReliefs.append(self.totalPeaks['Peaks'].pop())
+			self.showGrid()
+
+	def redo(self):
+		if self.oldReliefs != []:
+			self.totalPeaks['Peaks'].append(self.oldReliefs.pop())
+			self.showGrid()
+
+	def openConfig(self):
+		command, slash = ['xdg-open', 'start'], ['/', '\\']
+		try: system(f'{command[self.system]} {getcwd()}{slash[self.system]}config.json')
+		except Exception as e: self.showError(f'{e}, see help on GitHub (Ctrl+H)', 'Error')
+
+	def openHelp(self):
+		command = ['xdg-open', 'start']
+		system(f'{command[self.system]} https://github.com/Anosema/Landforms')
+
+	def showError(self, message, title):
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Information)
-		msg.setText("Your Litematic is ready, finished in")
-		msg.setInformativeText(str(int(process_time*10)/10) + 's')
-		msg.setWindowTitle("Finished")
+		msg.setText(message)
+		msg.setWindowTitle(title)
 		msg.show()
 		msg.exec_()
 
-	def ExportTXT(self, filename):
-		if '.txt' not in filename: filename += '.txt'
-		Xttw, Yttw, Zttw, Rttw = [], [], [], []
-		for i in range(len(self.grid[0])):
-			Xttw.append(str(list(self.grid[0][i])))
-			Yttw.append(str(list(self.grid[1][i])))
-			Zttw.append(str(list(self.grid[2][i])))
-		for i in self.reliefs:
-			Rttw.append(str(list(i)))
-		with open(filename, 'w') as file:
-			file.write(('|'.join(Xttw)).replace('[', '').replace(']', '')+'\n')
-			file.write(('|'.join(Yttw)).replace('[', '').replace(']', '')+'\n')
-			file.write(('|'.join(Zttw)).replace('[', '').replace(']', '')+'\n')
-			file.write(('|'.join(Rttw)).replace('[', '').replace(']', ''))
-		msg = QMessageBox()
-		msg.setIcon(QMessageBox.Information)
-		msg.setText("Your Save is ready")
-		msg.setWindowTitle("Finished")
-		msg.show()
-		msg.exec_()
+
+
 
 app = QApplication(argv)
-app.setStyle('Fusion')
+app.setStyle("Fusion")
 
-window = MainWindow()
+Window = MainWindow()
 
-window.show()
+Window.show()
+
 app.exec_()
