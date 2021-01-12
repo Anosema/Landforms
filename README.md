@@ -13,12 +13,10 @@
 	- [Config File](#Config-File)
 		- [Layer Mode](#Layer-Mode)
 		- [Landscape Mode](#Landscape-Mode)
-- [Example](#Example)
 ---
 
 ## Prerequisite
 Make sure to have run `pip install -r requirements.txt` to install requiered modules
-
 
 ## Main Interface
 ### Relief Settings
@@ -42,8 +40,6 @@ Make sure to have run `pip install -r requirements.txt` to install requiered mod
 - "Edit Litematic Settings" : Open your config.json file used for the litematic generation (cf [Config File](#Config-File))
 - "Live Render" (Ctrl+L) : Automatically visualize the relief generated with current settings, instead of clicking the "Visualize" button. 
 - "Help" (Ctrl+H) : Open this page
-
-
 
 ## Files
 ### Project File
@@ -111,16 +107,3 @@ The total weight of a list has to be == 100.
 
 
 You can freely change this config file as long as it's still in a JSON format.
-
-## Example
-Everything you will see here is the example for [this](example/example.txt) file.
-Here is the result shown in the program :
-![plot image](example/example.png)
-
-Here is the result in-game in Non-Layered Mode :
-![Non Layered screen image](example/exampleNonLayered.png)
-
-Here is the result in-game in Layered Mode :
-![Layered screen image](example/exampleLayered.png)
-
-The litematics file are available [here](example/)
